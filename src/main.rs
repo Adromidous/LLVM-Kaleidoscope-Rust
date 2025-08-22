@@ -1,5 +1,6 @@
 use std::fs;
 
+#[derive(Debug)]
 enum Token {
     EOF,
 
@@ -34,12 +35,16 @@ fn main() {
             else if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
                 identifier_str.push(valid_char);
                 
-                loop {
-                    let character = characters.next();
-                    match character {
-                        Some(val) => identifier_str.push(val),
-                        None => break 
+                while let Some(valid_char) = characters.next() {
+                    
+                    if valid_char.is_alphabetic() || valid_char.is_numeric() {
+                        identifier_str.push(valid_char);    
                     }
+
+                    else {
+                        break;
+                    }
+
                 }
 
                 match identifier_str.as_str() {
@@ -48,6 +53,7 @@ fn main() {
                     _ => tokens.push(Token::Identifier),
                 }
 
+                println!("Identifier: {0}", identifier_str);
                 identifier_str = String::from("");
 
             } 
@@ -55,14 +61,18 @@ fn main() {
             else if valid_char.is_numeric() {   //NUMBER
                 identifier_str.push(valid_char);
 
-                loop {
-                    let character = characters.next();
-                    match character {
-                        Some(val) => identifier_str.push(val),
-                        None => break
+                while let Some(valid_char) = characters.next() {
+
+                    if valid_char.is_numeric() {
+                        identifier_str.push(valid_char);
+                    }
+
+                    else {
+                        break;
                     }
                 }
-
+                
+                println!("Number: {0}", identifier_str);
                 tokens.push(Token::Number);
                 identifier_str = String::from("");
             }
@@ -74,4 +84,7 @@ fn main() {
 
     }
 
+    for token in tokens.iter() {
+        println!("TOKEN: {:#?}", token);
+    }
 }
