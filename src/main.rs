@@ -1,17 +1,15 @@
-use std::env;
 use std::fs;
-use std::io;
 
 enum Token {
     EOF,
 
     // Commands
-    Def,
-    Extern,
+    Def,                //['d', 'e', 'f']
+    Extern,             //['e', 'x', 't', 'e', 'r', 'n']
 
     // Primary
-    Identifier,
-    Number
+    Identifier,         //[a-zA-Z][a-zA-Z0-9]*
+    Number              //[0-9]+
 }
 
 fn main() {
@@ -19,8 +17,24 @@ fn main() {
     let contents = fs::read_to_string(file_path)
                     .expect("FILE NAME NOT VALID");
 
-    for i in contents.chars() {
-        println!("{}", i);
+    let mut tokens: Vec<Token> = Vec::new();
+    let mut identifier_str: String = String::from("");
+
+    let mut characters = contents.chars();
+
+    loop {
+        let character: Option<char> = characters.next();
+
+        if character == None {
+            break;
+        }
+
+        identifier_str.push(character);
+
+        if character == Some(' ') {
+            identifier_str = String::from("");
+        }
     }
-     
+
+    tokens.push(Token::EOF);
 }
