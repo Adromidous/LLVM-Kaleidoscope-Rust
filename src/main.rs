@@ -53,7 +53,7 @@ fn main() {
                     _ => tokens.push(Token::Identifier),
                 }
 
-                println!("Identifier: {0}", identifier_str);
+                //println!("Identifier: {0}", identifier_str);
                 identifier_str = String::from("");
 
             } 
@@ -72,7 +72,7 @@ fn main() {
                     }
                 }
                 
-                println!("Number: {0}", identifier_str);
+                //println!("Number: {0}", identifier_str);
                 tokens.push(Token::Number);
                 identifier_str = String::from("");
             }
