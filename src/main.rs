@@ -25,15 +25,17 @@ fn main() {
     loop {
         let character: Option<char> = characters.next();
 
-        if character == None {
+        if let Some(valid_char) = character {
+            identifier_str.push(valid_char);     
+
+            if valid_char == ' ' {
+                println!("{}", identifier_str);
+                identifier_str = String::from("");
+            }
+        } else { //REACH EOF
             break;
         }
 
-        identifier_str.push(character);
-
-        if character == Some(' ') {
-            identifier_str = String::from("");
-        }
     }
 
     tokens.push(Token::EOF);
