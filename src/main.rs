@@ -13,6 +13,19 @@ enum Token {
     Number              //[0-9]+
 }
 
+struct DefExprAST {
+
+}
+
+struct IdentifierExprAST {
+    Name: String
+    //MIGHT NEED TO ADD VALUE TO VARIABLE
+}
+
+struct NumberExprAST {
+    Val: u32
+}
+
 fn main() {
     let file_path = String::from("test_files/test1.txt");
     let contents = fs::read_to_string(file_path)
