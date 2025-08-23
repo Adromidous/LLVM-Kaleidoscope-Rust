@@ -13,10 +13,6 @@ enum Token {
     Number              //[0-9]+
 }
 
-struct DefExprAST {
-
-}
-
 struct IdentifierExprAST {
     Name: String
     //MIGHT NEED TO ADD VALUE TO VARIABLE
