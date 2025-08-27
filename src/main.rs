@@ -13,14 +13,33 @@ enum Token {
     Number              //[0-9]+
 }
 
-struct IdentifierExprAST {
+struct ExprAST {
+}
+
+struct VariableExprAST {
     Name: String
-    //MIGHT NEED TO ADD VALUE TO VARIABLE
 }
 
 struct NumberExprAST {
     Val: u32
 }
+
+struct BinaryExprAST {
+    Operator: char,
+    LHS: ExprAST,
+    RHS: ExprAST
+}
+
+struct UnaryExprAST {
+    Operator: char,
+    Var: ExprAST
+}
+
+struct CallerExprAST { //Expression class for function calls
+    Callee: String,
+    Arguments: Vec<ExprAST>
+}
+
 
 fn main() {
     let file_path = String::from("test_files/test1.txt");
