@@ -14,6 +14,8 @@ enum Token {
 }
 
 struct ExprAST {
+    Type: String
+    //NEED TO INCLUDE FIELD THAT HOLDS THE DATA FOR THE ACTUAL AST OBJECT
 }
 
 struct VariableExprAST {
@@ -35,11 +37,20 @@ struct UnaryExprAST {
     Var: ExprAST
 }
 
-struct CallerExprAST { //Expression class for function calls
+struct CallerExprAST { //Expression struct for function calls
     Callee: String,
     Arguments: Vec<ExprAST>
 }
 
+struct PrototypeExprAST { //Expression struct for function definitions 
+    Name: String,
+    Arguments: Vec<String>
+}
+
+struct FunctionExprAST {
+    Prototype: PrototypeExprAST, //Function name
+    Body: ExprAST
+}
 
 fn main() {
     let file_path = String::from("test_files/test1.txt");
@@ -81,7 +92,6 @@ fn main() {
                     _ => tokens.push(Token::Identifier),
                 }
 
-                //println!("Identifier: {0}", identifier_str);
                 identifier_str = String::from("");
 
             } 
@@ -100,7 +110,6 @@ fn main() {
                     }
                 }
                 
-                //println!("Number: {0}", identifier_str);
                 tokens.push(Token::Number);
                 identifier_str = String::from("");
             }
@@ -112,7 +121,19 @@ fn main() {
 
     }
 
-    for token in tokens.iter() {
-        println!("TOKEN: {:#?}", token);
+    //START PARSER
+    loop {
+        Token currToken = get_token();
+
+        //REFRAINING FROM USING MATCH CASE FOR CODE CLEANLINESS :|
+
+        if (currToken == Token::EOF) { 
+            break; 
+        } 
+
+        else if (currToken == Token::Number) {
+                 
+        }
     }
+
 }
