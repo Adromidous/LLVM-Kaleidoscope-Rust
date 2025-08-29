@@ -52,88 +52,104 @@ struct FunctionExprAST {
     Body: ExprAST
 }
 
-fn main() {
-    let file_path = String::from("test_files/test1.txt");
-    let contents = fs::read_to_string(file_path)
+struct Lexer {
+    identifier_str: String,
+    num_val: u32,
+    contents: String,
+    tokens: Vec<Token>
+}
+
+impl Lexer {
+
+    fn new(filename: &String) -> Lexer {
+        let mut contents = fs::read_to_string(filename)
                     .expect("FILE NAME NOT VALID");
 
-    let mut tokens: Vec<Token> = Vec::new();
-    let mut identifier_str: String = String::from("");
+        let mut tokens = Vec::new();
+        let mut identifier_str = String::from("");
 
-    let mut characters = contents.chars();
+        let mut characters = contents.chars();
 
-    loop {
-        let character: Option<char> = characters.next();
+        loop {
+            let character: Option<char> = characters.next();
 
-        if let Some(valid_char) = character {
+            if let Some(valid_char) = character {
 
-            if valid_char == ' ' { //WHITESPACES
-                continue;
-            }
+                if valid_char == ' ' { //WHITESPACES
+                    continue;
+                }
 
-            else if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
-                identifier_str.push(valid_char);
-                
-                while let Some(valid_char) = characters.next() {
+                else if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
+                    identifier_str.push(valid_char);
                     
-                    if valid_char.is_alphabetic() || valid_char.is_numeric() {
-                        identifier_str.push(valid_char);    
+                    while let Some(valid_char) = characters.next() {
+                        
+                        if valid_char.is_alphabetic() || valid_char.is_numeric() {
+                            identifier_str.push(valid_char);    
+                        }
+
+                        else {
+                            break;
+                        }
+
                     }
 
-                    else {
-                        break;
+                    match identifier_str.as_str() {
+                        "def" => tokens.push(Token::Def),
+                        "extern" => tokens.push(Token::Extern),
+                        _ => tokens.push(Token::Identifier),
                     }
 
+                    identifier_str = String::from("");
+
+                } 
+
+                else if valid_char.is_numeric() {   //NUMBER
+                    identifier_str.push(valid_char);
+
+                    while let Some(valid_char) = characters.next() {
+
+                        if valid_char.is_numeric() {
+                            identifier_str.push(valid_char);
+                        }
+
+                        else {
+                            break;
+                        }
+                    }
+                    
+                    tokens.push(Token::Number);
+                    identifier_str = String::from("");
                 }
 
-                match identifier_str.as_str() {
-                    "def" => tokens.push(Token::Def),
-                    "extern" => tokens.push(Token::Extern),
-                    _ => tokens.push(Token::Identifier),
-                }
-
-                identifier_str = String::from("");
-
-            } 
-
-            else if valid_char.is_numeric() {   //NUMBER
-                identifier_str.push(valid_char);
-
-                while let Some(valid_char) = characters.next() {
-
-                    if valid_char.is_numeric() {
-                        identifier_str.push(valid_char);
-                    }
-
-                    else {
-                        break;
-                    }
-                }
-                
-                tokens.push(Token::Number);
-                identifier_str = String::from("");
+            } else { //EOF
+                tokens.push(Token::EOF);
+                break;
             }
 
-        } else { //EOF
-            tokens.push(Token::EOF);
-            break;
+        }
+    
+        Lexer { 
+            identifier_str: identifier_str,
+            num_val: 0,
+            contents: contents,
+            tokens: tokens 
         }
 
     }
 
-    //START PARSER
-    loop {
-        Token currToken = get_token();
-
-        //REFRAINING FROM USING MATCH CASE FOR CODE CLEANLINESS :|
-
-        if (currToken == Token::EOF) { 
-            break; 
-        } 
-
-        else if (currToken == Token::Number) {
-                 
+    fn generate_tokens(&self){
+        for tok in self.tokens.iter() {
+            println!("TOKEN: {:#?}", tok);
         }
     }
 
+}
+
+fn main() {
+    let file_path = String::from("test_files/test1.txt");
+
+    let mut lex1 = Lexer::new(&file_path);
+
+    lex1.generate_tokens();
 }
