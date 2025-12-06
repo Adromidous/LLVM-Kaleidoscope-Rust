@@ -1,0 +1,98 @@
+use std::fs;
+
+use crate::Token::token::*;
+
+static mut LAST_CHAR: char = ' ';
+
+pub struct Lexer {
+    pub contents: String,
+    pub tokens: Vec<Token>
+}
+
+impl Lexer {
+    pub fn new(filename: &str) -> Lexer {
+        let contents = fs::read_to_string(filename)
+                    .expect("FILE NAME NOT VALID");
+
+        let mut tokens: Vec<Token> = Vec::new();
+
+        let mut characters = contents.chars();
+        let mut identifier_str: String = String::from("");
+
+        loop {
+            let character = characters.next();
+
+            if let Some(valid_char) = character {
+
+                unsafe {
+                    LAST_CHAR = valid_char;
+                }
+
+                if valid_char == ' ' { //WHITESPACES
+                    continue;
+                }
+
+                else if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
+                    identifier_str.push(valid_char);
+                    
+                    while let Some(valid_char) = characters.next() {
+                        
+                        if valid_char.is_alphabetic() || valid_char.is_numeric() {
+                            identifier_str.push(valid_char);    
+                        }
+
+                        else {
+                            break;
+                        }
+
+                    }
+
+                    match identifier_str.as_str() {
+                        "def" => tokens.push(Token::Def),
+                        "extern" => tokens.push(Token::Extern),
+                        _ => tokens.push(Token::Identifier),
+                    }
+
+                    identifier_str = String::from("");
+
+                } 
+
+                else if valid_char.is_numeric() {   //NUMBER
+                    identifier_str.push(valid_char);
+
+                    while let Some(valid_char) = characters.next() {
+
+                        if valid_char.is_numeric() {
+                            identifier_str.push(valid_char);
+                        }
+
+                        else {
+                            break;
+                        }
+                    }
+                    
+                    tokens.push(Token::Number);
+                    identifier_str = String::from("");
+                }
+
+            } else { //EOF
+                tokens.push(Token::EOF);
+                break;
+            }
+
+        }
+    
+        Lexer {
+            contents: contents,
+            tokens: tokens 
+        }
+
+    }
+
+    pub fn print_tokens(&self){
+        for tok in self.tokens.iter() {
+            println!("TOKEN: {:#?}", tok);
+        }
+    }
+
+}
