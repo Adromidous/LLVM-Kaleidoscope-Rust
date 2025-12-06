@@ -14,10 +14,22 @@ pub enum Token {
     // Miscellaneous
     Whitespace,
     Error
-} 
+}
+
+pub trait Visit {
+    fn print(&self);
+}
 
 pub struct ExprAST {
-    pub Tokens: Vec<Token>    
+    pub Tokens: Vec<Box<dyn Visit>>,
+}
+
+impl Visit for ExprAST {
+    fn print(&self) {
+        for tok in self.Tokens.iter() {
+            tok.print();
+        }
+    }
 }
 
 pub struct VariableExprAST {
@@ -25,8 +37,20 @@ pub struct VariableExprAST {
     pub Value: NumberExprAST
 }
 
+impl Visit for VariableExprAST {
+    fn print(&self) {
+        println!("{}", self.Name);
+    }
+}
+
 pub struct NumberExprAST {
     pub Value: usize
+}
+
+impl Visit for NumberExprAST {
+    fn print(&self) {
+        println!("{}", self.Value);
+    }
 }
 
 pub struct BinaryExprAST {
@@ -35,7 +59,19 @@ pub struct BinaryExprAST {
     pub RHS: NumberExprAST
 }
 
+impl Visit for BinaryExprAST {
+    fn print(&self) {
+        println!("{} {} {}", self.LHS.Name, self.Operator, self.RHS.Value);
+    }
+}
+
 pub struct UnaryExprAST {
     pub Operator: char,
-    pub Name: VariableExprAST
+    pub Variable: VariableExprAST
+}
+
+impl Visit for UnaryExprAST {
+    fn print(&self) {
+        println!("{}{}", self.Operator, self.Variable.Name);
+    }
 }

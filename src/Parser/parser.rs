@@ -1,21 +1,21 @@
 use std::fs;
-
 use crate::Token::token::*;
 
-pub struct Lexer {
-    pub contents: String,
-    pub tokens: Vec<Token>
+pub struct Parser {
+    Root: ExprAST
 }
 
-impl Lexer {
-    pub fn new(filename: &str) -> Lexer {
+impl Parser {
+    pub fn new(filename: &String) -> Self {
         let contents = fs::read_to_string(filename)
-                    .expect("FILE NAME NOT VALID");
+                            .expect("FILE NAME NOT VALID");
 
-        let mut tokens: Vec<Token> = Vec::new();
+        let mut tokens: Vec<Box<dyn Visit>> = Vec::new();
 
         let mut characters = contents.chars();
         let mut identifier_str: String = String::from("");
+
+        let mut prev_identifier: VariableExprAST;
 
         loop {
             let character = characters.next();
@@ -30,26 +30,30 @@ impl Lexer {
                     identifier_str.push(valid_char);
                     
                     while let Some(valid_char) = characters.next() {
-                        
                         if valid_char.is_alphabetic() || valid_char.is_numeric() {
                             identifier_str.push(valid_char);    
-                        }
-
-                        else {
+                        } else {
                             break;
                         }
-
                     }
 
                     match identifier_str.as_str() {
-                        "def" => tokens.push(Token::Def),
-                        "extern" => tokens.push(Token::Extern),
-                        _ => tokens.push(Token::Identifier),
+                        "def" => {
+                            let def_obj: ExprAST = ExprAST {Tokens: Vec::new()}; //TODO: Create seperate struct for def
+                            tokens.push(Box::new(def_obj));
+                        }
+                        "extern" => {
+                            let extern_obj: ExprAST = ExprAST {Tokens: Vec::new()}; //TODO: Create seperate struct for extern
+                            tokens.push(Box::new(extern_obj));
+                        }
+                        _ => {
+                            !unimplemented!();
+                        }
                     }
 
                     identifier_str = String::from("");
 
-                } 
+                }
 
                 else if valid_char.is_numeric() {   //NUMBER
                     identifier_str.push(valid_char);
@@ -65,28 +69,26 @@ impl Lexer {
                         }
                     }
                     
-                    tokens.push(Token::Number);
+                    let num: NumberExprAST = NumberExprAST { Value: (identifier_str.parse().unwrap()) };
+
+                    tokens.push(Box::new(num)); //Storing num object in heap
                     identifier_str = String::from("");
                 }
 
             } else { //EOF
-                tokens.push(Token::EOF);
                 break;
             }
-
         }
-    
-        Lexer {
-            contents: contents,
-            tokens: tokens 
-        }
+        
 
-    }
+        let parserExpr: ExprAST = ExprAST {
+            Tokens: tokens,
+        };
 
-    pub fn print_tokens(&self){
-        for tok in self.tokens.iter() {
-            println!("TOKEN: {:#?}", tok);
+        Parser {
+            Root: parserExpr
         }
     }
+
 
 }
