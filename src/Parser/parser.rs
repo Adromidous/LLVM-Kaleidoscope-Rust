@@ -33,6 +33,18 @@ impl Parser {
                     ast.push(Box::new(var));
                 }
 
+                tok::Token::Number => {
+                    let val: NumberExprAST = NumberExprAST {
+                        Value: self.gettok(&mut characters).parse().unwrap(),
+                    };
+
+                    ast.push(Box::new(val));
+                }
+
+                tok::Token::Operator => {
+                    let op = self.gettok(&mut characters);
+                }
+
                 _ => {
                     !unimplemented!();
                 }
