@@ -42,9 +42,9 @@ impl Lexer {
                     }
 
                     match identifier_str.as_str() {
-                        "def" => tokens.push(Token::Def),
-                        "extern" => tokens.push(Token::Extern),
-                        _ => tokens.push(Token::Identifier),
+                        "def" => tokens.push_back(Token::Def),
+                        "extern" => tokens.push_back(Token::Extern),
+                        _ => tokens.push_back(Token::Identifier),
                     }
 
                     identifier_str = String::from("");
@@ -65,16 +65,16 @@ impl Lexer {
                         }
                     }
                     
-                    tokens.push(Token::Number);
+                    tokens.push_back(Token::Number);
                     identifier_str = String::from("");
                 }
 
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // Operator
-                    tokens.push(Token::Operator);
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // OPERATOR
+                    tokens.push_back(Token::Operator);
                 }
 
             } else { //EOF
-                tokens.push(Token::EOF);
+                tokens.push_back(Token::EOF);
                 break;
             }
 
