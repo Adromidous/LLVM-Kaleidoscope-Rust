@@ -1,10 +1,10 @@
-use std::fs;
+use std::{fs, collections::VecDeque};
 
 use crate::Token::token::*;
 
 pub struct Lexer {
     pub contents: String,
-    pub tokens: Vec<Token>
+    pub tokens: VecDeque<Token>
 }
 
 impl Lexer {
@@ -12,7 +12,7 @@ impl Lexer {
         let contents = fs::read_to_string(filename)
                     .expect("FILE NAME NOT VALID");
 
-        let mut tokens: Vec<Token> = Vec::new();
+        let mut tokens: VecDeque<Token> = VecDeque::new();
 
         let mut characters = contents.chars();
         let mut identifier_str: String = String::from("");
@@ -67,6 +67,10 @@ impl Lexer {
                     
                     tokens.push(Token::Number);
                     identifier_str = String::from("");
+                }
+
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // Operator
+                    tokens.push(Token::Operator);
                 }
 
             } else { //EOF
