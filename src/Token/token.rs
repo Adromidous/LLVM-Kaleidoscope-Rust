@@ -23,10 +23,6 @@ pub trait Visit {
     fn print(&self);
 }
 
-pub trait ToExpr {
-    fn convert(&self) -> ExprAST;
-}
-
 pub struct ExprAST {
     pub Children: Vec<Box<dyn Visit>>,
 }
