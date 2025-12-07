@@ -1,7 +1,6 @@
-use crate::Token::token::{self as tok, ExprAST, NumberExprAST, VariableExprAST};
+use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::any::Any;
 use std::str::Chars;
 
 pub struct Parser {
@@ -21,6 +20,8 @@ impl Parser {
             match tok {
                 tok::Token::EOF => break,
 
+                tok::Token::Whitespace => continue,
+
                 tok::Token::Identifier => {
                     assert_eq!(lex.tokens.pop_front().unwrap(), tok::Token::Number);
 
@@ -38,11 +39,26 @@ impl Parser {
                         Value: self.gettok(&mut characters).parse().unwrap(),
                     };
 
+                    
+
                     ast.push(Box::new(val));
                 }
 
                 tok::Token::Operator => {
                     let op = self.gettok(&mut characters);
+
+                    let lhs = *(ast.pop().unwrap());
+
+                    assert_eq!(lex.tokens.pop_front().unwrap(), tok::Token::Number);
+                    let rhs = self.gettok(&mut characters);
+
+                    let bin = BinaryExprAST {
+                        Operator: op,
+                        LHS: NumberExprAST { Value: (lhs.Value) },
+                        RHS: NumberExprAST { Value: (rhs.parse().unwrap()) },
+                    };
+
+                    ast.push(Box::new(bin));
                 }
 
                 _ => {

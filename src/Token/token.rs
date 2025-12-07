@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Token {
@@ -55,24 +57,13 @@ impl Visit for NumberExprAST {
 }
 
 pub struct BinaryExprAST {
-    pub Operator: char,
-    pub LHS: VariableExprAST,
-    pub RHS: NumberExprAST
+    pub Operator: String,
+    pub LHS: NumberExprAST,
+    pub RHS: NumberExprAST,
 }
 
 impl Visit for BinaryExprAST {
     fn print(&self) {
-        println!("{} {} {}", self.LHS.Name, self.Operator, self.RHS.Value);
-    }
-}
-
-pub struct UnaryExprAST {
-    pub Operator: char,
-    pub Variable: VariableExprAST
-}
-
-impl Visit for UnaryExprAST {
-    fn print(&self) {
-        println!("{}{}", self.Operator, self.Variable.Name);
+        println!("{}", self.Operator);
     }
 }
