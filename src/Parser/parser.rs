@@ -1,6 +1,7 @@
 use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
+use std::fmt::Binary;
 use std::str::Chars;
 
 pub struct Parser {
@@ -29,7 +30,7 @@ impl Parser {
                         Value: self.gettok(&mut characters).parse().unwrap(),
                     };
 
-                    let var: VariableExprAST = VariableExprAST { Name: (self.gettok(&mut characters)), Value: (val) };
+                    let var: VariableExprAST = VariableExprAST { Name: (self.gettok(&mut characters))};
 
                     ast.push(Box::new(var));
                 }
@@ -39,25 +40,41 @@ impl Parser {
                         Value: self.gettok(&mut characters).parse().unwrap(),
                     };
 
-                    
-
                     ast.push(Box::new(val));
                 }
 
                 tok::Token::Operator => {
                     let op = self.gettok(&mut characters);
 
-                    let lhs = *(ast.pop().unwrap());
+                    let lhs = ast.pop().unwrap();
 
-                    assert_eq!(lex.tokens.pop_front().unwrap(), tok::Token::Number);
                     let rhs = self.gettok(&mut characters);
 
-                    let bin = BinaryExprAST {
-                        Operator: op,
-                        LHS: NumberExprAST { Value: (lhs.Value) },
-                        RHS: NumberExprAST { Value: (rhs.parse().unwrap()) },
-                    };
+                    let bin: BinaryExprAST;
+                    
+                    match self.token_lookahead(characters) {
+                        tok::Token::Identifier => {
+                            bin = BinaryExprAST {
+                                Operator: op,
+                                LHS: lhs,
+                                RHS: Box::new(VariableExprAST { 
+                                    Name: rhs,
+                                }),
+                            };
+                        }
 
+                        _ => {
+                            bin = BinaryExprAST {
+                                Operator: op,
+                                LHS: lhs,
+                                RHS: Box::new(NumberExprAST { 
+                                    Value: rhs.parse().unwrap(),
+                                }),
+                            };
+                        }
+                    }
+
+                    lex.tokens.pop_front().unwrap(); //Skip the next token since we have to look ahead.
                     ast.push(Box::new(bin));
                 }
 
@@ -69,7 +86,7 @@ impl Parser {
 
         Parser {
             Root: ExprAST {
-                Tokens: ast,
+                Children: ast,
             }
         }
     }
@@ -125,5 +142,16 @@ impl Parser {
 
         }
 
+    }
+
+    fn token_lookahead(&self, char_iter: &mut Chars<'_>) -> tok::Token {
+        let mut lookahead = char_iter.peekable();
+        let val = lookahead.peek().unwrap();
+
+        if val.is_alphabetic() {
+            tok::Token::Identifier
+        } else {
+            tok::Token::Number
+        }
     }
 }

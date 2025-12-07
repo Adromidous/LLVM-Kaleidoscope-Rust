@@ -23,13 +23,17 @@ pub trait Visit {
     fn print(&self);
 }
 
+pub trait ToExpr {
+    fn convert(&self) -> ExprAST;
+}
+
 pub struct ExprAST {
-    pub Tokens: Vec<Box<dyn Visit>>,
+    pub Children: Vec<Box<dyn Visit>>,
 }
 
 impl Visit for ExprAST {
     fn print(&self) {
-        for tok in self.Tokens.iter() {
+        for tok in self.Children.iter() {
             tok.print();
         }
     }
@@ -37,7 +41,6 @@ impl Visit for ExprAST {
 
 pub struct VariableExprAST {
     pub Name: String,
-    pub Value: NumberExprAST
 }
 
 impl Visit for VariableExprAST {
@@ -58,12 +61,36 @@ impl Visit for NumberExprAST {
 
 pub struct BinaryExprAST {
     pub Operator: String,
-    pub LHS: NumberExprAST,
-    pub RHS: NumberExprAST,
+    pub LHS: Box<dyn Visit>,
+    pub RHS: Box<dyn Visit>,
 }
 
 impl Visit for BinaryExprAST {
     fn print(&self) {
         println!("{}", self.Operator);
     }
+}
+
+pub struct CallExprAST {
+    pub Callee: String,
+    pub Args: ExprAST,
+}
+
+impl Visit for CallExprAST {
+    fn print(&self) {
+        println!("{}", self.Callee);
+        for tok in self.Args.Children.iter() {
+            tok.print();
+        }
+    }
+}
+
+pub struct PrototypeAST { //Captures the function declaration - Name and arguments of a function
+    pub Name: String,
+    pub Args: Vec<Box<dyn Visit>>,
+}
+
+pub struct FunctionAST { //Captures the function definition itself
+    pub Proto: PrototypeAST,
+    pub Body: ExprAST,
 }
