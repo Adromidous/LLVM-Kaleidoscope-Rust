@@ -5,94 +5,48 @@ use std::fmt::Binary;
 use std::str::Chars;
 
 pub struct Parser {
-    Root: tok::ExprAST
+    Root: Box<dyn tok::Visit>,
 }
 
 impl Parser {
-    pub fn new(&self, lex: &mut lex::Lexer) -> Self {
 
-        let mut ast: Vec<Box<dyn tok::Visit>> = Vec::new();
-
+    pub fn new(&self, lex: &mut lex::Lexer) {
         let mut characters = lex.contents.chars();
 
-        while (lex.tokens.len() > 0) {
-            let tok = lex.tokens.pop_front().unwrap();
-
-            match tok {
-                tok::Token::EOF => break,
-
-                tok::Token::Whitespace => continue,
-
-                tok::Token::Identifier => {
-                    assert_eq!(lex.tokens.pop_front().unwrap(), tok::Token::Number);
-
-                    let val: NumberExprAST = NumberExprAST {
-                        Value: self.gettok(&mut characters).parse().unwrap(),
-                    };
-
-                    let var: VariableExprAST = VariableExprAST { Name: (self.gettok(&mut characters))};
-
-                    ast.push(Box::new(var));
-                }
-
-                tok::Token::Number => {
-                    let val: NumberExprAST = NumberExprAST {
-                        Value: self.gettok(&mut characters).parse().unwrap(),
-                    };
-
-                    ast.push(Box::new(val));
-                }
-
-                tok::Token::Operator => {
-                    let op = self.gettok(&mut characters);
-
-                    let lhs = ast.pop().unwrap();
-
-                    let rhs = self.gettok(&mut characters);
-
-                    let bin: BinaryExprAST;
-                    
-                    match self.token_lookahead(characters) {
-                        tok::Token::Identifier => {
-                            bin = BinaryExprAST {
-                                Operator: op,
-                                LHS: lhs,
-                                RHS: Box::new(VariableExprAST { 
-                                    Name: rhs,
-                                }),
-                            };
-                        }
-
-                        _ => {
-                            bin = BinaryExprAST {
-                                Operator: op,
-                                LHS: lhs,
-                                RHS: Box::new(NumberExprAST { 
-                                    Value: rhs.parse().unwrap(),
-                                }),
-                            };
-                        }
-                    }
-
-                    lex.tokens.pop_front().unwrap(); //Skip the next token since we have to look ahead.
-                    ast.push(Box::new(bin));
-                }
-
-                _ => {
-                    !unimplemented!();
-                }
-            }
-        }
-
         Parser {
-            Root: ExprAST {
-                Children: ast,
+            Root: Self::recursive_descent(characters),
+        };
+    }
+
+    fn recursive_descent(char_iter: &mut Chars<'_>) -> Box<dyn tok::Visit> { 
+        
+        let (curr_tok, curr_str) = Self::gettok(char_iter);
+
+        match curr_tok {
+            tok::Token::Identifier => {
+                return Box::new(VariableExprAST { Name: curr_str});
+            },
+
+            tok::Token::Number => {
+                return Box::new(NumberExprAST { Value: curr_str.parse().unwrap()});
+            },
+
+            tok::Token::Operator => {
+                return Box::new(BinaryExprAST { 
+                    Operator: curr_str.parse().unwrap(),
+                    LHS: Self::recursive_descent(char_iter),
+                    RHS: Self::recursive_descent(char_iter),
+                });
+            },
+
+            _ => {
+                !todo!()
             }
         }
     }
 
     //RETURNS THE VALUE OF TOKEN
-    fn gettok(&self, char_iter: &mut Chars<'_>) -> String {
+    fn gettok(char_iter: &mut Chars<'_>) -> (tok::Token, String){
         let mut identifier_str: String = String::from("");
 
         let character = char_iter.next();
@@ -117,10 +71,10 @@ impl Parser {
 
                     }
 
-                    return identifier_str;
+                    return (tok::Token::Identifier, identifier_str);
                 } 
 
-                else if valid_char.is_numeric() {   //NUMBER
+                else if valid_char.is_numeric() { //NUMBER
                     identifier_str.push(valid_char);
 
                     while let Some(valid_char) = char_iter.next() {
@@ -131,27 +85,14 @@ impl Parser {
                             break;
                         }
                     }
-                    
-                    return identifier_str;
+
+                    return (tok::Token::Number, identifier_str);
                 }
 
                 else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // OPERATOR
-                    return String::from(valid_char);
+                    return (tok::Token::Operator, String::from(valid_char));
                 }
             }
-
-        }
-
-    }
-
-    fn token_lookahead(&self, char_iter: &mut Chars<'_>) -> tok::Token {
-        let mut lookahead = char_iter.peekable();
-        let val = lookahead.peek().unwrap();
-
-        if val.is_alphabetic() {
-            tok::Token::Identifier
-        } else {
-            tok::Token::Number
         }
     }
 }

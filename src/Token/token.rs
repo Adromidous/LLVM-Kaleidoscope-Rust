@@ -24,12 +24,12 @@ pub trait Visit {
 }
 
 pub struct ExprAST {
-    pub Children: Vec<Box<dyn Visit>>,
+    pub Child: Vec<Box<dyn Visit>>,
 }
 
 impl Visit for ExprAST {
     fn print(&self) {
-        for tok in self.Children.iter() {
+        for tok in self.Child.iter() {
             tok.print();
         }
     }
@@ -75,9 +75,7 @@ pub struct CallExprAST {
 impl Visit for CallExprAST {
     fn print(&self) {
         println!("{}", self.Callee);
-        for tok in self.Args.Children.iter() {
-            tok.print();
-        }
+        self.Args.print();
     }
 }
 
