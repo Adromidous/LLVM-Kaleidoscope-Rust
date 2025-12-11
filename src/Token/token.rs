@@ -3,11 +3,10 @@ use std::ops::Deref;
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Token {
-    EOF,
 
     // Commands
-    Def,                //['d', 'e', 'f']
-    Extern,             //['e', 'x', 't', 'e', 'r', 'n']
+    //Def,                //['d', 'e', 'f']
+    //Extern,             //['e', 'x', 't', 'e', 'r', 'n']
 
     // Primary
     Identifier,         //[a-zA-Z][a-zA-Z0-9]*
@@ -15,8 +14,8 @@ pub enum Token {
     Operator,           //['+', '-', '*', '/']
 
     // Miscellaneous
-    Whitespace,
-    Error
+    EOF
+    //Error
 }
 
 pub trait Visit {
@@ -45,6 +44,14 @@ impl Visit for VariableExprAST {
     }
 }
 
+impl Deref for VariableExprAST {
+    type Target = VariableExprAST;
+
+    fn deref(&self) -> &Self::Target {
+        return &self;
+    }
+}
+
 pub struct NumberExprAST {
     pub Value: usize
 }
@@ -52,6 +59,14 @@ pub struct NumberExprAST {
 impl Visit for NumberExprAST {
     fn print(&self) {
         println!("{}", self.Value);
+    }
+}
+
+impl Deref for NumberExprAST {
+    type Target = NumberExprAST;
+
+    fn deref(&self) -> &Self::Target {
+        return &self;
     }
 }
 
@@ -67,24 +82,32 @@ impl Visit for BinaryExprAST {
     }
 }
 
-pub struct CallExprAST {
-    pub Callee: String,
-    pub Args: ExprAST,
-}
+impl Deref for BinaryExprAST {
+    type Target = BinaryExprAST;
 
-impl Visit for CallExprAST {
-    fn print(&self) {
-        println!("{}", self.Callee);
-        self.Args.print();
+    fn deref(&self) -> &Self::Target {
+        return &self;
     }
 }
 
-pub struct PrototypeAST { //Captures the function declaration - Name and arguments of a function
-    pub Name: String,
-    pub Args: Vec<Box<dyn Visit>>,
-}
+// pub struct CallExprAST {
+//     pub Callee: String,
+//     pub Args: ExprAST,
+// }
 
-pub struct FunctionAST { //Captures the function definition itself
-    pub Proto: PrototypeAST,
-    pub Body: ExprAST,
-}
+// impl Visit for CallExprAST {
+//     fn print(&self) {
+//         println!("{}", self.Callee);
+//         self.Args.print();
+//     }
+// }
+
+// pub struct PrototypeAST { //Captures the function declaration - Name and arguments of a function
+//     pub Name: String,
+//     pub Args: Vec<Box<dyn Visit>>,
+// }
+
+// pub struct FunctionAST { //Captures the function definition itself
+//     pub Proto: PrototypeAST,
+//     pub Body: ExprAST,
+// }

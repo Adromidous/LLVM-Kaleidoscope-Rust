@@ -1,6 +1,7 @@
 use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
+use std::any::Any;
 use std::fmt::Binary;
 use std::str::Chars;
 
@@ -10,11 +11,11 @@ pub struct Parser {
 
 impl Parser {
 
-    pub fn new(&self, lex: &mut lex::Lexer) {
+    pub fn new(lex: &mut lex::Lexer) {
         let mut characters = lex.contents.chars();
 
         Parser {
-            Root: Self::recursive_descent(characters),
+            Root: Self::recursive_descent(&mut characters),
         };
     }
 
@@ -23,6 +24,14 @@ impl Parser {
         let (curr_tok, curr_str) = Self::gettok(char_iter);
 
         match curr_tok {
+            tok::Token::EOF => {
+                return Box::new(
+                    ExprAST {
+                        Child: Vec::new(), //FIXME: Need to find alternate solution to EOF
+                    }
+                );
+            },
+
             tok::Token::Identifier => {
                 return Box::new(VariableExprAST { Name: curr_str});
             },
@@ -62,7 +71,7 @@ impl Parser {
                     identifier_str.push(valid_char);
                     
                     while let Some(valid_char) = char_iter.next() {
-                        
+
                         if valid_char.is_alphabetic() || valid_char.is_numeric() {
                             identifier_str.push(valid_char);    
                         } else {
@@ -71,7 +80,19 @@ impl Parser {
 
                     }
 
-                    return (tok::Token::Identifier, identifier_str);
+                    // match identifier_str.as_str() {
+                    //     "def" => {
+                    //         return (tok::Token::Def, identifier_str)
+                    //     },
+                    //     "extern" => {
+                    //         return (tok::Token::Extern, identifier_str)
+                    //     },
+                    //     _ => {
+                    //         return (tok::Token::Identifier, identifier_str)
+                    //     },
+                    // }
+
+                    return (tok::Token::Identifier, identifier_str)
                 } 
 
                 else if valid_char.is_numeric() { //NUMBER
@@ -94,5 +115,8 @@ impl Parser {
                 }
             }
         }
+    }
+
+    pub fn explore_tree(tok: Box<dyn tok::Visit>) {
     }
 }
