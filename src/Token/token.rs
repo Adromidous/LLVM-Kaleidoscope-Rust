@@ -23,24 +23,24 @@ pub trait Visit {
 }
 
 pub struct ExprAST {
-    pub Child: Vec<Box<dyn Visit>>,
+    pub child: Vec<Box<dyn Visit>>,
 }
 
 impl Visit for ExprAST {
     fn print(&self) {
-        for tok in self.Child.iter() {
+        for tok in self.child.iter() {
             tok.print();
         }
     }
 }
 
 pub struct VariableExprAST {
-    pub Name: String,
+    pub name: String,
 }
 
 impl Visit for VariableExprAST {
     fn print(&self) {
-        println!("{}", self.Name);
+        println!("{}", self.name);
     }
 }
 
@@ -53,12 +53,12 @@ impl Deref for VariableExprAST {
 }
 
 pub struct NumberExprAST {
-    pub Value: usize
+    pub value: usize
 }
 
 impl Visit for NumberExprAST {
     fn print(&self) {
-        println!("{}", self.Value);
+        println!("{}", self.value);
     }
 }
 
@@ -71,14 +71,14 @@ impl Deref for NumberExprAST {
 }
 
 pub struct BinaryExprAST {
-    pub Operator: String,
-    pub LHS: Box<dyn Visit>,
-    pub RHS: Box<dyn Visit>,
+    pub operator: String,
+    pub lhs: Box<dyn Visit>,
+    pub rhs: Box<dyn Visit>,
 }
 
 impl Visit for BinaryExprAST {
     fn print(&self) {
-        println!("{}", self.Operator);
+        println!("{}", self.operator);
     }
 }
 

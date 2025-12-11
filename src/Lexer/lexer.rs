@@ -41,12 +41,13 @@ impl Lexer {
 
                     }
 
-                    match identifier_str.as_str() {
-                        "def" => tokens.push_back(Token::Def),
-                        "extern" => tokens.push_back(Token::Extern),
-                        _ => tokens.push_back(Token::Identifier),
-                    }
+                    // match identifier_str.as_str() {
+                    //     "def" => tokens.push_back(Token::Def),
+                    //     "extern" => tokens.push_back(Token::Extern),
+                    //     _ => tokens.push_back(Token::Identifier),
+                    // }
 
+                    tokens.push_back(Token::Identifier);
                     identifier_str = String::from("");
 
                 } 

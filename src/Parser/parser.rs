@@ -1,22 +1,20 @@
 use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::any::Any;
-use std::fmt::Binary;
 use std::str::Chars;
 
 pub struct Parser {
-    Root: Box<dyn tok::Visit>,
+    root: Box<dyn tok::Visit>,
 }
 
 impl Parser {
 
-    pub fn new(lex: &mut lex::Lexer) {
+    pub fn new(lex: &mut lex::Lexer) -> Parser{
         let mut characters = lex.contents.chars();
 
         Parser {
-            Root: Self::recursive_descent(&mut characters),
-        };
+            root: Self::recursive_descent(&mut characters),
+        }
     }
 
     fn recursive_descent(char_iter: &mut Chars<'_>) -> Box<dyn tok::Visit> { 
@@ -27,30 +25,26 @@ impl Parser {
             tok::Token::EOF => {
                 return Box::new(
                     ExprAST {
-                        Child: Vec::new(), //FIXME: Need to find alternate solution to EOF
+                        child: Vec::new(), //FIXME: Need to find alternate solution to EOF
                     }
                 );
             },
 
             tok::Token::Identifier => {
-                return Box::new(VariableExprAST { Name: curr_str});
+                return Box::new(VariableExprAST { name: curr_str});
             },
 
             tok::Token::Number => {
-                return Box::new(NumberExprAST { Value: curr_str.parse().unwrap()});
+                return Box::new(NumberExprAST { value: curr_str.parse().unwrap()});
             },
 
             tok::Token::Operator => {
                 return Box::new(BinaryExprAST { 
-                    Operator: curr_str.parse().unwrap(),
-                    LHS: Self::recursive_descent(char_iter),
-                    RHS: Self::recursive_descent(char_iter),
+                    operator: curr_str.parse().unwrap(),
+                    lhs: Self::recursive_descent(char_iter),
+                    rhs: Self::recursive_descent(char_iter),
                 });
             },
-
-            _ => {
-                !todo!()
-            }
         }
     }
 
@@ -110,13 +104,14 @@ impl Parser {
                     return (tok::Token::Number, identifier_str);
                 }
 
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // OPERATOR
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { // OPERATOR
                     return (tok::Token::Operator, String::from(valid_char));
                 }
             }
         }
     }
 
-    pub fn explore_tree(tok: Box<dyn tok::Visit>) {
+    pub fn explore_tree(&self) {
+        self.root.print();
     }
 }
