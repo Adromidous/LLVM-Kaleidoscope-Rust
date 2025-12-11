@@ -78,7 +78,9 @@ pub struct BinaryExprAST {
 
 impl Visit for BinaryExprAST {
     fn print(&self) {
+        self.lhs.print();
         println!("{}", self.operator);
+        self.rhs.print();
     }
 }
 
