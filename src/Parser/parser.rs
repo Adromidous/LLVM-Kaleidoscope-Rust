@@ -60,12 +60,16 @@ impl Parser {
         let mut identifier_str: String = String::from("");
         loop {
             if let Some(valid_char) = char_iter.next() {
-                
-                if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
+                if valid_char == ' ' { //WHITESPACES
+                    continue;
+                }
+
+                else if valid_char.is_alphabetic() { //IDENTIFIER
                     identifier_str.push(valid_char);
-                    while let Some(valid_char) = char_iter.next() {
-                        if valid_char.is_alphanumeric() {
-                            identifier_str.push(valid_char);                    
+
+                    while let Some(next_char) = char_iter.next() {
+                        if next_char.is_alphanumeric() {
+                            identifier_str.push(next_char);                    
                         } else {
                             break;
                         }
@@ -84,15 +88,12 @@ impl Parser {
                             break;
                         }
                     }
+                    
                     return (tok::Token::Number, identifier_str);
                 }
 
-                if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { //OPERATOR
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { //OPERATOR
                     return (tok::Token::Operator, String::from(valid_char));
-                }
-
-                else {
-                    continue; //WHITESPACE
                 }
             } else { //EOF
                 return (tok::Token::EOF, String::from(""));

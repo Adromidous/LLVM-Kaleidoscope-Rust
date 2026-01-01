@@ -9,5 +9,5 @@ fn main() {
 
     let mut lex = lex::Lexer::new(&file_path);
     let parse1 = par::Parser::new(&mut lex);
-    parse1.explore_tree();
+    //parse1.explore_tree();
 }

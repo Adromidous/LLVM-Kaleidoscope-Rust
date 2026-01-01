@@ -70,7 +70,7 @@ impl Lexer {
                     identifier_str = String::from("");
                 }
 
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/'  { // OPERATOR
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { // OPERATOR
                     tokens.push_back(Token::Operator);
                 }
 
