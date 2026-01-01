@@ -1,8 +1,6 @@
 use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::any::Any;
-use std::fmt::Binary;
 use std::str::Chars;
 
 pub struct Parser {
@@ -20,7 +18,6 @@ impl Parser {
     }
 
     fn recursive_descent(char_iter: &mut Chars<'_>) -> Box<dyn tok::Visit> { 
-        
         let (curr_tok, curr_str) = Self::gettok(char_iter);
 
         match curr_tok {
@@ -61,48 +58,44 @@ impl Parser {
     //RETURNS THE VALUE OF TOKEN
     fn gettok(char_iter: &mut Chars<'_>) -> (tok::Token, String){
         let mut identifier_str: String = String::from("");
-
         loop {
             if let Some(valid_char) = char_iter.next() {
-
+                
                 if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
                     identifier_str.push(valid_char);
-                    
                     while let Some(valid_char) = char_iter.next() {
-
-                        if valid_char.is_alphabetic() || valid_char.is_numeric() {
-                            identifier_str.push(valid_char);    
+                        if valid_char.is_alphanumeric() {
+                            identifier_str.push(valid_char);                    
                         } else {
                             break;
                         }
-
                     }
 
                     return (tok::Token::Identifier, identifier_str)
-                } 
+                }
 
                 else if valid_char.is_numeric() { //NUMBER
                     identifier_str.push(valid_char);
 
                     while let Some(valid_char) = char_iter.next() {
-
                         if valid_char.is_numeric() {
                             identifier_str.push(valid_char);
                         } else {
                             break;
                         }
                     }
-
                     return (tok::Token::Number, identifier_str);
                 }
 
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { // OPERATOR
+                if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { //OPERATOR
                     return (tok::Token::Operator, String::from(valid_char));
                 }
 
                 else {
-                    continue;
+                    continue; //WHITESPACE
                 }
+            } else { //EOF
+                return (tok::Token::EOF, String::from(""));
             }
         }
     }
@@ -111,14 +104,16 @@ impl Parser {
 
         let mut lookahead_itr = char_iter.peekable();
 
-        let lookahead_char = lookahead_itr.peek().unwrap();
+        let lookahead_char = lookahead_itr.peek();
 
-        if *lookahead_char == '+' || *lookahead_char == '-' || *lookahead_char == '*' || *lookahead_char == '/' || *lookahead_char == '=' {
+        if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') || lookahead_char == Some(&'=') {
             return tok::Token::Operator;
-        } else if lookahead_char.is_numeric() {
+        } else if lookahead_char.unwrap().is_numeric() {
             return tok::Token::Number;
-        } else {
+        } else if lookahead_char.unwrap().is_alphabetic() {
             return tok::Token::Identifier;
+        } else {
+            return tok::Token::EOF;
         }
     }
 

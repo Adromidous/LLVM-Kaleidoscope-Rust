@@ -11,7 +11,7 @@ pub enum Token {
     // Primary
     Identifier,         //[a-zA-Z][a-zA-Z0-9]*
     Number,             //[0-9]+
-    Operator,           //['+', '-', '*', '/']
+    Operator,           //['+', '-', '*', '/', '=']
 
     // Miscellaneous
     EOF
