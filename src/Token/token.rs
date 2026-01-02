@@ -14,6 +14,7 @@ pub enum Token {
     Operator,           //['+', '-', '*', '/', '=']
 
     // Miscellaneous
+    Whitespace,
     EOF
     //Error
 }

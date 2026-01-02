@@ -21,19 +21,12 @@ impl Parser {
         let (curr_tok, curr_str) = Self::gettok(char_iter);
 
         match curr_tok {
-            tok::Token::EOF => {
-                return Box::new(
-                    ExprAST {
-                        child: Vec::new(), //FIXME: Need to find alternate solution to EOF
-                    }
-                );
-            },
 
             tok::Token::Identifier => {
-                if Self::lookahead_tok(char_iter) == tok::Token::Operator {
+                if Self::lookahead_tok(char_iter.clone()) == tok::Token::Operator {
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(VariableExprAST {name: curr_str}),
-                        operator: String::from(Self::gettok(char_iter).1),
+                        operator: Self::gettok(char_iter).1,
                         rhs: Self::recursive_descent(char_iter)
                     })
                 } else {
@@ -45,26 +38,23 @@ impl Parser {
                 return Box::new(NumberExprAST { value: curr_str.parse().unwrap()});
             },
 
-            tok::Token::Operator => {
-                return Box::new(BinaryExprAST { 
-                    operator: curr_str.parse().unwrap(),
-                    lhs: Self::recursive_descent(char_iter),
-                    rhs: Self::recursive_descent(char_iter),
-                });
+            _ => { // FIXME: COVERS CASES FOR EOF AND OPERATOR
+                return Box::new(
+                    ExprAST {
+                        child: Vec::new(), //FIXME: NEED TO FIND ALTERNATION SOLUTION TO EOF
+                    }
+                );
             },
+
         }
     }
 
-    //RETURNS THE VALUE OF TOKEN
     fn gettok(char_iter: &mut Chars<'_>) -> (tok::Token, String){
         let mut identifier_str: String = String::from("");
         loop {
             if let Some(valid_char) = char_iter.next() {
-                if valid_char == ' ' { //WHITESPACES
-                    continue;
-                }
 
-                else if valid_char.is_alphabetic() { //IDENTIFIER
+                if valid_char.is_alphabetic() { //IDENTIFIER
                     identifier_str.push(valid_char);
 
                     while let Some(next_char) = char_iter.next() {
@@ -74,7 +64,7 @@ impl Parser {
                             break;
                         }
                     }
-
+                    
                     return (tok::Token::Identifier, identifier_str)
                 }
 
@@ -88,21 +78,25 @@ impl Parser {
                             break;
                         }
                     }
-                    
+
                     return (tok::Token::Number, identifier_str);
                 }
 
                 else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { //OPERATOR
                     return (tok::Token::Operator, String::from(valid_char));
                 }
+
+                else { //WHITESPACES
+                    continue;
+                }
+
             } else { //EOF
                 return (tok::Token::EOF, String::from(""));
             }
         }
     }
 
-    fn lookahead_tok(char_iter: &mut Chars<'_>) -> tok::Token {
-
+    fn lookahead_tok(char_iter: Chars<'_>) -> tok::Token {
         let mut lookahead_itr = char_iter.peekable();
 
         let lookahead_char = lookahead_itr.peek();
@@ -113,6 +107,8 @@ impl Parser {
             return tok::Token::Number;
         } else if lookahead_char.unwrap().is_alphabetic() {
             return tok::Token::Identifier;
+        } else if lookahead_char == Some(&' ') {
+            return tok::Token::Whitespace;
         } else {
             return tok::Token::EOF;
         }
