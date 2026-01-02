@@ -51,29 +51,32 @@ impl Parser {
 
     fn gettok(char_iter: &mut Chars<'_>) -> (tok::Token, String){
         let mut identifier_str: String = String::from("");
+        let mut char_peek = char_iter.peekable();
         loop {
-            if let Some(valid_char) = char_iter.next() {
+
+            if let Some(valid_char) = char_peek.next() {
 
                 if valid_char.is_alphabetic() { //IDENTIFIER
                     identifier_str.push(valid_char);
 
-                    while let Some(next_char) = char_iter.next() {
+                    while let Some(&next_char) = char_peek.peek() {
                         if next_char.is_alphanumeric() {
-                            identifier_str.push(next_char);                    
+                            identifier_str.push(next_char);
+                            char_peek.next();                 
                         } else {
                             break;
                         }
                     }
-                    
-                    return (tok::Token::Identifier, identifier_str)
+                    return (tok::Token::Identifier, identifier_str);
                 }
 
                 else if valid_char.is_numeric() { //NUMBER
                     identifier_str.push(valid_char);
 
-                    while let Some(valid_char) = char_iter.next() {
+                    while let Some(&valid_char) = char_peek.peek() {
                         if valid_char.is_numeric() {
                             identifier_str.push(valid_char);
+                            char_peek.next();
                         } else {
                             break;
                         }
