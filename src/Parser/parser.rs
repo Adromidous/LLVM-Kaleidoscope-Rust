@@ -1,7 +1,7 @@
 use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::str::Chars;
+use std::{str::Chars, iter::Peekable};
 
 pub struct Parser {
     root: Box<dyn tok::Visit>,
@@ -10,14 +10,14 @@ pub struct Parser {
 impl Parser {
 
     pub fn new(lex: &mut lex::Lexer) -> Parser{
-        let mut characters = lex.contents.chars();
+        let mut characters = lex.contents.chars().peekable();
 
         Parser {
             root: Self::recursive_descent(&mut characters),
         }
     }
 
-    fn recursive_descent(char_iter: &mut Chars<'_>) -> Box<dyn tok::Visit> { 
+    fn recursive_descent(char_iter: &mut Peekable<Chars>) -> Box<dyn tok::Visit> { 
         let (curr_tok, curr_str) = Self::gettok(char_iter);
 
         match curr_tok {
@@ -49,20 +49,20 @@ impl Parser {
         }
     }
 
-    fn gettok(char_iter: &mut Chars<'_>) -> (tok::Token, String){
+    fn gettok(char_iter: &mut Peekable<Chars>) -> (tok::Token, String){
         let mut identifier_str: String = String::from("");
-        let mut char_peek = char_iter.peekable();
+
         loop {
 
-            if let Some(valid_char) = char_peek.next() {
+            if let Some(valid_char) = char_iter.next() {
 
                 if valid_char.is_alphabetic() { //IDENTIFIER
                     identifier_str.push(valid_char);
 
-                    while let Some(&next_char) = char_peek.peek() {
+                    while let Some(&next_char) = char_iter.peek() {
                         if next_char.is_alphanumeric() {
                             identifier_str.push(next_char);
-                            char_peek.next();                 
+                            char_iter.next();                 
                         } else {
                             break;
                         }
@@ -73,10 +73,10 @@ impl Parser {
                 else if valid_char.is_numeric() { //NUMBER
                     identifier_str.push(valid_char);
 
-                    while let Some(&valid_char) = char_peek.peek() {
+                    while let Some(&valid_char) = char_iter.peek() {
                         if valid_char.is_numeric() {
                             identifier_str.push(valid_char);
-                            char_peek.next();
+                            char_iter.next();
                         } else {
                             break;
                         }
@@ -99,7 +99,7 @@ impl Parser {
         }
     }
 
-    fn lookahead_tok(char_iter: Chars<'_>) -> tok::Token {
+    fn lookahead_tok(char_iter: Peekable<Chars>) -> tok::Token {
         let mut lookahead_itr = char_iter.peekable();
 
         let lookahead_char = lookahead_itr.peek();
