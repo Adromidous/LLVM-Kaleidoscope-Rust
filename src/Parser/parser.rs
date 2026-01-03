@@ -1,10 +1,12 @@
-use crate::Token::token::{self as tok, BinaryExprAST, ExprAST, NumberExprAST, VariableExprAST};
+use crate::Token::token::{self as tok, BinaryExprAST, EqualExprAST, ExprAST, NumberExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::{str::Chars, iter::Peekable};
+use std::{str::Chars, iter::Peekable, collections::HashMap};
+
 
 pub struct Parser {
     root: Box<dyn tok::Visit>,
+    precedence: HashMap<char, u8>
 }
 
 impl Parser {
@@ -14,6 +16,12 @@ impl Parser {
 
         Parser {
             root: Self::recursive_descent(&mut characters),
+            precedence: HashMap::from([
+                ('+', 10),
+                ('-', 10),
+                ('*', 20),
+                ('/', 20),
+            ]),
         }
     }
 
@@ -24,12 +32,21 @@ impl Parser {
 
             tok::Token::Identifier => {
                 if Self::lookahead_tok(char_iter) == tok::Token::Operator {
+                    let (op_tok, op_str) = Self::gettok(char_iter);
+                    let op_precedence = 
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(VariableExprAST {name: curr_str}),
-                        operator: Self::gettok(char_iter).1,
+                        operator: op_str,
+                        precedence: Self.precedence[op_str],
                         rhs: Self::recursive_descent(char_iter)
                     })
-                } else {
+                } else if Self::lookahead_tok(char_iter) == tok::Token::Equal {
+                    Self::gettok(char_iter);
+                    return Box::new(EqualExprAST {
+                        lhs: VariableExprAST {name: curr_str},
+                        rhs: Self::recursive_descent(char_iter)
+                    })
+                } else {      
                     return Box::new(VariableExprAST { name: curr_str});
                 }
             },
@@ -86,7 +103,11 @@ impl Parser {
                     return (tok::Token::Number, identifier_str);
                 }
 
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { //OPERATOR
+                else if valid_char == '=' {
+                    return (tok::Token::Equal, String::from(valid_char));
+                }
+
+                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' { //OPERATOR
                     return (tok::Token::Operator, String::from(valid_char));
                 }
 
@@ -112,8 +133,10 @@ impl Parser {
 
         let lookahead_char = char_iter.peek();
 
-        if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') || lookahead_char == Some(&'=') {
+        if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') {
             return tok::Token::Operator;
+        } else if lookahead_char == Some(&'=') {
+            return tok::Token::Equal;
         } else if lookahead_char.unwrap().is_numeric() {
             return tok::Token::Number;
         } else if lookahead_char.unwrap().is_alphabetic() {
