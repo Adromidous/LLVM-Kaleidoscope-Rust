@@ -23,7 +23,7 @@ impl Parser {
         match curr_tok {
 
             tok::Token::Identifier => {
-                if Self::lookahead_tok(char_iter.clone()) == tok::Token::Operator {
+                if Self::lookahead_tok(char_iter) == tok::Token::Operator {
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(VariableExprAST {name: curr_str}),
                         operator: Self::gettok(char_iter).1,
@@ -62,11 +62,12 @@ impl Parser {
                     while let Some(&next_char) = char_iter.peek() {
                         if next_char.is_alphanumeric() {
                             identifier_str.push(next_char);
-                            char_iter.next();                 
+                            char_iter.next();               
                         } else {
                             break;
                         }
                     }
+
                     return (tok::Token::Identifier, identifier_str);
                 }
 
@@ -99,10 +100,17 @@ impl Parser {
         }
     }
 
-    fn lookahead_tok(char_iter: Peekable<Chars>) -> tok::Token {
-        let mut lookahead_itr = char_iter.peekable();
+    fn lookahead_tok(char_iter: &mut Peekable<Chars>) -> tok::Token {
 
-        let lookahead_char = lookahead_itr.peek();
+        while let Some(&peek_char) = char_iter.peek() {
+            if peek_char == ' ' {
+                char_iter.next();
+            } else {
+                break;
+            }
+        }
+
+        let lookahead_char = char_iter.peek();
 
         if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') || lookahead_char == Some(&'=') {
             return tok::Token::Operator;
@@ -110,8 +118,6 @@ impl Parser {
             return tok::Token::Number;
         } else if lookahead_char.unwrap().is_alphabetic() {
             return tok::Token::Identifier;
-        } else if lookahead_char == Some(&' ') {
-            return tok::Token::Whitespace;
         } else {
             return tok::Token::EOF;
         }
