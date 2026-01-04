@@ -1,12 +1,10 @@
-use crate::Token::token::{self as tok, BinaryExprAST, EqualExprAST, ExprAST, NumberExprAST, VariableExprAST};
+use crate::Token::token::{self as tok, BinaryExprAST, EqualExprAST, ExprAST, NumberExprAST, VariableExprAST, ParenthesisExprAST};
 use crate::Lexer::lexer as lex;
 
-use std::{str::Chars, iter::Peekable, collections::HashMap};
-
+use std::{str::Chars, iter::Peekable};
 
 pub struct Parser {
     root: Box<dyn tok::Visit>,
-    precedence: HashMap<char, u8>
 }
 
 impl Parser {
@@ -16,12 +14,6 @@ impl Parser {
 
         Parser {
             root: Self::recursive_descent(&mut characters),
-            precedence: HashMap::from([
-                ('+', 10),
-                ('-', 10),
-                ('*', 20),
-                ('/', 20),
-            ]),
         }
     }
 
@@ -32,12 +24,9 @@ impl Parser {
 
             tok::Token::Identifier => {
                 if Self::lookahead_tok(char_iter) == tok::Token::Operator {
-                    let (op_tok, op_str) = Self::gettok(char_iter);
-                    let op_precedence = 
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(VariableExprAST {name: curr_str}),
-                        operator: op_str,
-                        precedence: Self.precedence[op_str],
+                        operator: Self::gettok(char_iter).1,
                         rhs: Self::recursive_descent(char_iter)
                     })
                 } else if Self::lookahead_tok(char_iter) == tok::Token::Equal {
@@ -51,8 +40,23 @@ impl Parser {
                 }
             },
 
+            tok::Token::OpenParen => {
+                return Box::new(ParenthesisExprAST { 
+                    child: Self::recursive_descent(char_iter),
+                })
+            }
+
             tok::Token::Number => {
-                return Box::new(NumberExprAST { value: curr_str.parse().unwrap()});
+
+                if Self::lookahead_tok(char_iter) == tok::Token::Operator {
+                    return Box::new(BinaryExprAST {
+                        lhs: Box::new(NumberExprAST { value: curr_str.parse().unwrap()}),
+                        operator: Self::gettok(char_iter).1,
+                        rhs: Self::recursive_descent(char_iter)
+                    })
+                } else {
+                    return Box::new(NumberExprAST { value: curr_str.parse().unwrap()});
+                }
             },
 
             _ => { // FIXME: COVERS CASES FOR EOF AND OPERATOR

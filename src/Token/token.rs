@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Deref};
+use std::ops::Deref;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
@@ -13,6 +13,8 @@ pub enum Token {
     Number,             //[0-9]+
     Operator,           //['+', '-', '*', '/']
     Equal,              //['=']
+    OpenParen,          //['(']
+    CloseParen,         //[')']
 
     // Miscellaneous
     Whitespace,
@@ -74,7 +76,6 @@ impl Deref for NumberExprAST {
 
 pub struct BinaryExprAST {
     pub operator: String,
-    pub precedence: u8,
     pub lhs: Box<dyn Visit>,
     pub rhs: Box<dyn Visit>,
 }
@@ -113,6 +114,16 @@ impl Deref for EqualExprAST {
 
     fn deref(&self) -> &Self::Target {
         return &self;
+    }
+}
+
+pub struct ParenthesisExprAST {
+    pub child: Box<dyn Visit>
+}
+
+impl Visit for ParenthesisExprAST {
+    fn print(&self) {
+        self.child.print();
     }
 }
 
