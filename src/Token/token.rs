@@ -136,20 +136,20 @@ impl Visit for EOFExprAST {
     }
 }
 
-pub struct CallExprAST {
-    pub Callee: String,
-    pub Args: Vec<Box<dyn Visit>>,
-}
+// pub struct CallExprAST {
+//     pub Callee: String,
+//     pub Args: Vec<Box<dyn Visit>>,
+// }
 
-impl Visit for CallExprAST {
-    fn print(&self) {
-        println!("{}", self.Callee);
+// impl Visit for CallExprAST {
+//     fn print(&self) {
+//         println!("{}", self.Callee);
         
-        for arg in self.Args.into_iter() {
-            arg.print();
-        }
-    }
-}
+//         for arg in self.Args.into_iter() {
+//             arg.print();
+//         }
+//     }
+// }
 
 // pub struct PrototypeAST { //Captures the function declaration - Name and arguments of a function
 //     pub Name: String,

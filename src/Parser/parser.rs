@@ -41,9 +41,14 @@ impl Parser {
             },
 
             tok::Token::OpenParen => {
-                return Box::new(ParenthesisExprAST { 
+
+                let ret_tok = Box::new(ParenthesisExprAST { 
                     child: Self::recursive_descent(char_iter),
-                })
+                });
+
+                assert_eq!(Self::gettok(char_iter).0, tok::Token::CloseParen);
+
+                return ret_tok;
             }
 
             tok::Token::Number => {
@@ -94,10 +99,6 @@ impl Parser {
                 }
             },
 
-            tok::Token::Def => {
-                assert_eq!(Self::gettok(char_iter).0, tok::Token::Comma);
-            }
-
             tok::Token::EOF => {
                 return Box::new(EOFExprAST{})
             },
@@ -132,9 +133,9 @@ impl Parser {
                         }
                     }
 
-                    if (identifier_str == "def") {
+                    if identifier_str == "def" {
                         return (tok::Token::Def, identifier_str);
-                    } else if (identifier_str == "extern") {
+                    } else if identifier_str == "extern" {
                         return (tok::Token::Extern, identifier_str);
                     } else {
                         return (tok::Token::Identifier, identifier_str);
