@@ -128,7 +128,13 @@ impl Parser {
                         }
                     }
 
-                    return (tok::Token::Identifier, identifier_str);
+                    if (identifier_str == "def") {
+                        return (tok::Token::Def, identifier_str);
+                    } else if (identifier_str == "extern") {
+                        return (tok::Token::Extern, identifier_str);
+                    } else {
+                        return (tok::Token::Identifier, identifier_str);
+                    }
                 }
 
                 else if valid_char.is_numeric() { //NUMBER
@@ -161,7 +167,6 @@ impl Parser {
                 else if valid_char == ')' { //CLOSE PARENTHESIS - Need this for error checking
                     return (tok::Token::CloseParen, String::from(")"));
                 }
-
 
                 else { //WHITESPACES
                     continue;

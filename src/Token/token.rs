@@ -5,8 +5,8 @@ use std::ops::Deref;
 pub enum Token {
 
     // Commands
-    //Def,                //['d', 'e', 'f']
-    //Extern,             //['e', 'x', 't', 'e', 'r', 'n']
+    Def,                //['d', 'e', 'f']
+    Extern,             //['e', 'x', 't', 'e', 'r', 'n']
 
     // Primary
     Identifier,         //[a-zA-Z][a-zA-Z0-9]*
@@ -15,6 +15,7 @@ pub enum Token {
     Equal,              //['=']
     OpenParen,          //['(']
     CloseParen,         //[')']
+    Comma,              //[',']
 
     // Miscellaneous
     Whitespace,         //[' ']
@@ -135,17 +136,20 @@ impl Visit for EOFExprAST {
     }
 }
 
-// pub struct CallExprAST {
-//     pub Callee: String,
-//     pub Args: ExprAST,
-// }
+pub struct CallExprAST {
+    pub Callee: String,
+    pub Args: Vec<Box<dyn Visit>>,
+}
 
-// impl Visit for CallExprAST {
-//     fn print(&self) {
-//         println!("{}", self.Callee);
-//         self.Args.print();
-//     }
-// }
+impl Visit for CallExprAST {
+    fn print(&self) {
+        println!("{}", self.Callee);
+        
+        for arg in self.Args.into_iter() {
+            arg.print();
+        }
+    }
+}
 
 // pub struct PrototypeAST { //Captures the function declaration - Name and arguments of a function
 //     pub Name: String,
