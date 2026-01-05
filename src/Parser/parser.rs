@@ -49,9 +49,38 @@ impl Parser {
             tok::Token::Number => {
 
                 if Self::lookahead_tok(char_iter) == tok::Token::Operator {
+                    let op = Self::gettok(char_iter);
+
+                    if Self::gettok(char_iter).0 == tok::Token::Number {
+                        match op.1.as_str() {
+                            "+" => {
+                                return Box::new(NumberExprAST {
+                                    value: curr_str.parse().unwrap() + Self::gettok(char_iter).1.parse().unwrap(),
+                                })
+                            },
+
+                            "-" => {
+                                return Box::new(NumberExprAST {
+                                    value: curr_str.parse().unwrap() - Self::gettok(char_iter).1.parse().unwrap(),
+                                })
+                            },
+
+                            "/" => {
+                                return Box::new(NumberExprAST {
+                                    value: curr_str.parse().unwrap() / Self::gettok(char_iter).1.parse().unwrap(),
+                                })
+                            },
+
+                            "*" => {
+                                return Box::new(NumberExprAST {
+                                    value: curr_str.parse().unwrap() * Self::gettok(char_iter).1.parse().unwrap(),
+                                })
+                            },
+                        }
+                    }
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(NumberExprAST { value: curr_str.parse().unwrap()}),
-                        operator: Self::gettok(char_iter).1,
+                        operator: op.1,
                         rhs: Self::recursive_descent(char_iter)
                     })
                 } else {
