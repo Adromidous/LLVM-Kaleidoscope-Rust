@@ -17,8 +17,8 @@ pub enum Token {
     CloseParen,         //[')']
 
     // Miscellaneous
-    Whitespace,
-    EOF
+    Whitespace,         //[' ']
+    EOF                 //['\0']
 }
 
 pub trait Visit {

@@ -154,6 +154,15 @@ impl Parser {
                     return (tok::Token::Operator, String::from(valid_char));
                 }
 
+                else if valid_char == '(' { //OPEN PARENTHESIS
+                    return (tok::Token::OpenParen, String::from("("));
+                }
+
+                else if valid_char == ')' { //CLOSE PARENTHESIS - Need this for error checking
+                    return (tok::Token::CloseParen, String::from(")"));
+                }
+
+
                 else { //WHITESPACES
                     continue;
                 }
