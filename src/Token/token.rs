@@ -19,7 +19,6 @@ pub enum Token {
     // Miscellaneous
     Whitespace,
     EOF
-    //Error
 }
 
 pub trait Visit {
@@ -124,6 +123,15 @@ pub struct ParenthesisExprAST {
 impl Visit for ParenthesisExprAST {
     fn print(&self) {
         self.child.print();
+    }
+}
+
+pub struct EOFExprAST {
+}
+
+impl Visit for EOFExprAST {
+    fn print(&self) {
+        println!("EOF");
     }
 }
 

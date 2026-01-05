@@ -1,4 +1,4 @@
-use crate::Token::token::{self as tok, BinaryExprAST, EqualExprAST, ExprAST, NumberExprAST, VariableExprAST, ParenthesisExprAST};
+use crate::Token::token::{self as tok, BinaryExprAST, EOFExprAST, EqualExprAST, ExprAST, NumberExprAST, ParenthesisExprAST, VariableExprAST};
 use crate::Lexer::lexer as lex;
 
 use std::{str::Chars, iter::Peekable};
@@ -53,8 +53,7 @@ impl Parser {
                     let op = Self::gettok(char_iter);
 
                     if Self::lookahead_tok(char_iter) == tok::Token::Number {
-                        let rhs_str= Self::gettok(char_iter).1;
-                        let rhs_value: usize = rhs_str.parse().unwrap();
+                        let rhs_value: usize = Self::gettok(char_iter).1.parse().unwrap();
                         match op.1.as_str() {
                             "+" => {
                                 return Box::new(NumberExprAST {
@@ -95,10 +94,14 @@ impl Parser {
                 }
             },
 
-            _ => { // FIXME: COVERS CASES FOR EOF AND OPERATOR
+            tok::Token::EOF => {
+                return Box::new(EOFExprAST{})
+            },
+
+            _ => { // FIXME: COVER CASES FOR OPERATOR
                 return Box::new(
                     ExprAST {
-                        child: Vec::new(), //FIXME: NEED TO FIND ALTERNATION SOLUTION TO EOF
+                        child: Vec::new(), //FIXME: NEED TO FIND ALTERNATE SOLUTION FOR EOF
                     }
                 );
             },
