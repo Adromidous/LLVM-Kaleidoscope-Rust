@@ -94,6 +94,10 @@ impl Parser {
                 }
             },
 
+            tok::Token::Def => {
+                assert_eq!(Self::gettok(char_iter).0, tok::Token::Comma);
+            }
+
             tok::Token::EOF => {
                 return Box::new(EOFExprAST{})
             },
@@ -166,6 +170,10 @@ impl Parser {
 
                 else if valid_char == ')' { //CLOSE PARENTHESIS - Need this for error checking
                     return (tok::Token::CloseParen, String::from(")"));
+                }
+
+                else if valid_char == ',' {
+                    return (tok::Token::Comma, String::from(","));
                 }
 
                 else { //WHITESPACES
