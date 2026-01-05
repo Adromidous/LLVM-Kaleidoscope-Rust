@@ -40,16 +40,14 @@ impl Parser {
                 }
             },
 
-            tok::Token::OpenParen => {
+            // tok::Token::OpenParen => {
 
-                let ret_tok = Box::new(ParenthesisExprAST { 
-                    child: Self::recursive_descent(char_iter),
-                });
+            //     let ret_tok = Box::new(ParenthesisExprAST { 
+            //         child: Self::recursive_descent(char_iter),
+            //     });
 
-                assert_eq!(Self::gettok(char_iter).0, tok::Token::CloseParen);
-
-                return ret_tok;
-            }
+            //     return ret_tok;
+            // }
 
             tok::Token::Number => {
                 let value: usize = curr_str.parse().unwrap();
@@ -85,7 +83,7 @@ impl Parser {
                             },
 
                             _ => {
-                                println!("Error!");
+                                panic!("Improper arithmetic operation")
                             }
                         }
                     }
@@ -199,7 +197,9 @@ impl Parser {
 
         let lookahead_char = char_iter.peek();
 
-        if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') {
+        if lookahead_char == None {
+            return tok::Token::EOF;
+        } else if lookahead_char == Some(&'+') || lookahead_char == Some(&'-') || lookahead_char == Some(&'*') || lookahead_char == Some(&'/') {
             return tok::Token::Operator;
         } else if lookahead_char == Some(&'=') {
             return tok::Token::Equal;
