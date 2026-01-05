@@ -47,44 +47,51 @@ impl Parser {
             }
 
             tok::Token::Number => {
+                let value: usize = curr_str.parse().unwrap();
 
                 if Self::lookahead_tok(char_iter) == tok::Token::Operator {
                     let op = Self::gettok(char_iter);
 
-                    if Self::gettok(char_iter).0 == tok::Token::Number {
+                    if Self::lookahead_tok(char_iter) == tok::Token::Number {
+                        let rhs_str= Self::gettok(char_iter).1;
+                        let rhs_value: usize = rhs_str.parse().unwrap();
                         match op.1.as_str() {
                             "+" => {
                                 return Box::new(NumberExprAST {
-                                    value: curr_str.parse().unwrap() + Self::gettok(char_iter).1.parse().unwrap(),
+                                    value: value + rhs_value,
                                 })
                             },
 
                             "-" => {
                                 return Box::new(NumberExprAST {
-                                    value: curr_str.parse().unwrap() - Self::gettok(char_iter).1.parse().unwrap(),
+                                    value: value - rhs_value,
                                 })
                             },
 
                             "/" => {
                                 return Box::new(NumberExprAST {
-                                    value: curr_str.parse().unwrap() / Self::gettok(char_iter).1.parse().unwrap(),
+                                    value: value / rhs_value,
                                 })
                             },
 
                             "*" => {
                                 return Box::new(NumberExprAST {
-                                    value: curr_str.parse().unwrap() * Self::gettok(char_iter).1.parse().unwrap(),
+                                    value: value * rhs_value,
                                 })
                             },
+
+                            _ => {
+                                println!("Error!");
+                            }
                         }
                     }
                     return Box::new(BinaryExprAST {
-                        lhs: Box::new(NumberExprAST { value: curr_str.parse().unwrap()}),
+                        lhs: Box::new(NumberExprAST { value: value}),
                         operator: op.1,
                         rhs: Self::recursive_descent(char_iter)
                     })
                 } else {
-                    return Box::new(NumberExprAST { value: curr_str.parse().unwrap()});
+                    return Box::new(NumberExprAST { value: value});
                 }
             },
 
