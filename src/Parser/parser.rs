@@ -40,15 +40,6 @@ impl Parser {
                 }
             },
 
-            // tok::Token::OpenParen => {
-
-            //     let ret_tok = Box::new(ParenthesisExprAST { 
-            //         child: Self::recursive_descent(char_iter),
-            //     });
-
-            //     return ret_tok;
-            // }
-
             tok::Token::Number => {
                 let value: usize = curr_str.parse().unwrap();
 
