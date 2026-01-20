@@ -2,6 +2,7 @@ use crate::Token::token::{self as tok, BinaryExprAST, EOFExprAST, EqualExprAST, 
 use crate::Lexer::lexer as lex;
 
 use std::{str::Chars, iter::Peekable};
+use std::{fs::File, io::Write};
 
 pub struct Parser {
     root: Box<dyn tok::Visit>,
@@ -46,38 +47,38 @@ impl Parser {
                 if Self::lookahead_tok(char_iter) == tok::Token::Operator {
                     let op = Self::gettok(char_iter);
 
-                    if Self::lookahead_tok(char_iter) == tok::Token::Number {
-                        let rhs_value: usize = Self::gettok(char_iter).1.parse().unwrap();
-                        match op.1.as_str() {
-                            "+" => {
-                                return Box::new(NumberExprAST {
-                                    value: value + rhs_value,
-                                })
-                            },
+                    // if Self::lookahead_tok(char_iter) == tok::Token::Number {
+                    //     let rhs_value: usize = Self::gettok(char_iter).1.parse().unwrap();
+                    //     match op.1.as_str() {
+                    //         "+" => {
+                    //             return Box::new(NumberExprAST {
+                    //                 value: value + rhs_value,
+                    //             })
+                    //         },
 
-                            "-" => {
-                                return Box::new(NumberExprAST {
-                                    value: value - rhs_value,
-                                })
-                            },
+                    //         "-" => {
+                    //             return Box::new(NumberExprAST {
+                    //                 value: value - rhs_value,
+                    //             })
+                    //         },
 
-                            "/" => {
-                                return Box::new(NumberExprAST {
-                                    value: value / rhs_value,
-                                })
-                            },
+                    //         "/" => {
+                    //             return Box::new(NumberExprAST {
+                    //                 value: value / rhs_value,
+                    //             })
+                    //         },
 
-                            "*" => {
-                                return Box::new(NumberExprAST {
-                                    value: value * rhs_value,
-                                })
-                            },
+                    //         "*" => {
+                    //             return Box::new(NumberExprAST {
+                    //                 value: value * rhs_value,
+                    //             })
+                    //         },
 
-                            _ => {
-                                panic!("Improper arithmetic operation")
-                            }
-                        }
-                    }
+                    //         _ => {
+                    //             panic!("Improper arithmetic operation")
+                    //         }
+                    //     }
+                    // }
                     return Box::new(BinaryExprAST {
                         lhs: Box::new(NumberExprAST { value: value}),
                         operator: op.1,
@@ -203,7 +204,7 @@ impl Parser {
         }
     }
 
-    pub fn explore_tree(&self) {
-        self.root.print();
+    pub fn explore_tree(&self, file: &mut File) {
+        self.root.write_instruction(file);
     }
 }
