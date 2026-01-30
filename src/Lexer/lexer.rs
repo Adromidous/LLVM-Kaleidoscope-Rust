@@ -2,6 +2,7 @@ use std::fs;
 
 use crate::Token::token::*;
 use std::str::Chars;
+use std::iter::Peekable;
 
 pub struct Lexer {
     pub contents: String,
@@ -14,67 +15,19 @@ impl Lexer {
                     .expect("FILE NAME NOT VALID");
 
         let mut tokens: Vec<Token> = Vec::new();
-
-        let mut characters = contents.chars();
-        let mut peekable_chars = characters.peekable();
-        let mut identifier_str: String = String::from("");
+        let mut characters = contents.chars().peekable();
 
         loop {
-            let character = characters.next();
-
-            if let Some(valid_char) = character {
-
-                if valid_char == ' ' { //WHITESPACES
-                    continue;
-                }
-
-                else if valid_char.is_alphabetic() { //DEF, EXTERN, IDENTIFIER
-                    identifier_str.push(valid_char);
-                    
-                    while let Some(valid_char) = characters.next() {
-                        
-                        if valid_char.is_alphabetic() || valid_char.is_numeric() {
-                            identifier_str.push(valid_char);    
-                        }
-
-                        else {
-                            break;
-                        }
-
-                    }
-
-                    tokens.push(Token::IDENTIFIER);
-                    identifier_str = String::from("");
-
-                } 
-
-                else if valid_char.is_numeric() {   //NUMBER
-                    identifier_str.push(valid_char);
-
-                    while let Some(valid_char) = characters.next() {
-
-                        if valid_char.is_numeric() {
-                            identifier_str.push(valid_char);
-                        }
-
-                        else {
-                            break;
-                        }
-                    }
-                    
-                    tokens.push(Token::NUMBER);
-                    identifier_str = String::from("");
-                }
-
-                else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { // OPERATOR
-                    tokens.push(Token::OPERATOR);
-                }
-
-            } else { //EOF
-                tokens.push(Token::EOF);
+            let tok = Self::gettok(&mut characters);
+            
+            if tok == Token::EOF {
+                tokens.push(tok);
                 break;
             }
 
+            else {
+                tokens.push(tok);
+            }
         }
     
         Lexer {
@@ -84,14 +37,15 @@ impl Lexer {
 
     }
 
-    fn gettok(chars: &mut Chars<'_>) -> Token { //Returns next token
+    fn gettok(chars: &mut Peekable<Chars>) -> Token { //Returns next token
         let mut tok_str = String::from("");
 
         while let Some(c) = chars.next() {
 
             if c == ' ' {
                 loop {
-                    if chars.next() == Some(' ') {
+                    if chars.peek() == Some(&' ') {
+                        chars.next();
                         continue;
                     }
 
@@ -101,10 +55,6 @@ impl Lexer {
 
             else if c == '\t' || c == '\n' {
                 return Token::MISC;
-            }
-
-            else if c == '\0' {
-                return Token::EOF;
             }
 
             else if c == '+' || c == '-' || c == '/' || c == '*' {
@@ -126,30 +76,36 @@ impl Lexer {
             else if c.is_alphabetic() {
                 tok_str.push(c);
 
-                while let Some(c_next) = chars.next() {
+                while let Some(&c_next) = chars.peek() {
                     if c_next.is_alphanumeric() {
                         tok_str.push(c_next);
+                        chars.next();
                     } else {
-                        return Token::IDENTIFIER;
+                        break;
                     }
                 }
+
+                return Token::IDENTIFIER;
             }
 
             else if c.is_numeric() {
                 tok_str.push(c);
 
-                while let Some(c_next) = chars.next() {
+                while let Some(&c_next) = chars.peek() {
                     if c_next.is_numeric() {
                         tok_str.push(c_next);
+                        chars.next();
                     } else {
-                        return Token::NUMBER;
+                        break;
                     }
                 }
+
+                return Token::NUMBER;
             }
 
         }
 
-        return Token::MISC;
+        return Token::EOF;
     }
 
     pub fn print_tokens(&self){

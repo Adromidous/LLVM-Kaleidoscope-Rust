@@ -48,14 +48,6 @@ impl Visit for VariableExprAST {
     }
 }
 
-impl Deref for VariableExprAST {
-    type Target = VariableExprAST;
-
-    fn deref(&self) -> &Self::Target {
-        return &self;
-    }
-}
-
 pub struct NumberExprAST {
     pub value: usize
 }
@@ -63,14 +55,6 @@ pub struct NumberExprAST {
 impl Visit for NumberExprAST {
     fn print(&self) {
         println!("{}", self.value);
-    }
-}
-
-impl Deref for NumberExprAST {
-    type Target = NumberExprAST;
-
-    fn deref(&self) -> &Self::Target {
-        return &self;
     }
 }
 
@@ -88,14 +72,6 @@ impl Visit for BinaryExprAST {
     }
 }
 
-impl Deref for BinaryExprAST {
-    type Target = BinaryExprAST;
-
-    fn deref(&self) -> &Self::Target {
-        return &self;
-    }
-}
-
 pub struct EqualExprAST {
     pub lhs: VariableExprAST,
     pub rhs: Box<dyn Visit>,
@@ -106,14 +82,6 @@ impl Visit for EqualExprAST {
         println!("{}", self.lhs.name);
         println!("=");
         self.rhs.print();
-    }
-}
-
-impl Deref for EqualExprAST {
-    type Target = EqualExprAST;
-
-    fn deref(&self) -> &Self::Target {
-        return &self;
     }
 }
 

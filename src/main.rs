@@ -9,5 +9,6 @@ fn main() {
     let file_path: String = String::from("test_files/arithmetic_test1.txt");
     
     let mut lex = lex::Lexer::new(&file_path);
+    lex.print_tokens();
     //let parse1 = par::Parser::new(&mut lex);
 }
