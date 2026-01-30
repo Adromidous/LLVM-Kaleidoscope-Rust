@@ -1,10 +1,11 @@
-use std::{fs, collections::VecDeque};
+use std::fs;
 
 use crate::Token::token::*;
+use std::str::Chars;
 
 pub struct Lexer {
     pub contents: String,
-    pub tokens: VecDeque<Token>
+    pub tokens: Vec<Token>
 }
 
 impl Lexer {
@@ -12,9 +13,10 @@ impl Lexer {
         let contents = fs::read_to_string(filename)
                     .expect("FILE NAME NOT VALID");
 
-        let mut tokens: VecDeque<Token> = VecDeque::new();
+        let mut tokens: Vec<Token> = Vec::new();
 
         let mut characters = contents.chars();
+        let mut peekable_chars = characters.peekable();
         let mut identifier_str: String = String::from("");
 
         loop {
@@ -41,13 +43,7 @@ impl Lexer {
 
                     }
 
-                    // match identifier_str.as_str() {
-                    //     "def" => tokens.push_back(Token::Def),
-                    //     "extern" => tokens.push_back(Token::Extern),
-                    //     _ => tokens.push_back(Token::Identifier),
-                    // }
-
-                    tokens.push_back(Token::Identifier);
+                    tokens.push(Token::IDENTIFIER);
                     identifier_str = String::from("");
 
                 } 
@@ -66,16 +62,16 @@ impl Lexer {
                         }
                     }
                     
-                    tokens.push_back(Token::Number);
+                    tokens.push(Token::NUMBER);
                     identifier_str = String::from("");
                 }
 
                 else if valid_char == '+' || valid_char == '-' || valid_char == '*' || valid_char == '/' || valid_char == '=' { // OPERATOR
-                    tokens.push_back(Token::Operator);
+                    tokens.push(Token::OPERATOR);
                 }
 
             } else { //EOF
-                tokens.push_back(Token::EOF);
+                tokens.push(Token::EOF);
                 break;
             }
 
@@ -86,6 +82,74 @@ impl Lexer {
             tokens: tokens 
         }
 
+    }
+
+    fn gettok(chars: &mut Chars<'_>) -> Token { //Returns next token
+        let mut tok_str = String::from("");
+
+        while let Some(c) = chars.next() {
+
+            if c == ' ' {
+                loop {
+                    if chars.next() == Some(' ') {
+                        continue;
+                    }
+
+                    return Token::WHITESPACE;
+                }
+            }
+
+            else if c == '\t' || c == '\n' {
+                return Token::MISC;
+            }
+
+            else if c == '\0' {
+                return Token::EOF;
+            }
+
+            else if c == '+' || c == '-' || c == '/' || c == '*' {
+                return Token::OPERATOR;
+            }
+
+            else if c == '=' {
+                return Token::EQUAL;
+            }
+
+            else if c == '(' {
+                return Token::OPENPARENT;
+            }
+
+            else if c == ')' {
+                return Token::CLOSEPARENT;
+            }
+
+            else if c.is_alphabetic() {
+                tok_str.push(c);
+
+                while let Some(c_next) = chars.next() {
+                    if c_next.is_alphanumeric() {
+                        tok_str.push(c_next);
+                    } else {
+                        return Token::IDENTIFIER;
+                    }
+                }
+            }
+
+            else if c.is_numeric() {
+                tok_str.push(c);
+
+                while let Some(c_next) = chars.next() {
+                    if c_next.is_numeric() {
+                        tok_str.push(c_next);
+                    } else {
+                        return Token::NUMBER;
+                    }
+                }
+            }
+
+        }
+
+        return Token::MISC;
     }
 
     pub fn print_tokens(&self){

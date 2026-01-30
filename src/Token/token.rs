@@ -6,26 +6,24 @@ use std::{fs::File, io::Write};
 pub enum Token {
 
     // Commands
-    Def,                //['d', 'e', 'f']
-    Extern,             //['e', 'x', 't', 'e', 'r', 'n']
+    // Def,                //['d', 'e', 'f']
+    // Extern,             //['e', 'x', 't', 'e', 'r', 'n']
 
     // Primary
-    Identifier,         //[a-zA-Z][a-zA-Z0-9]*
-    Number,             //[0-9]+
-    Operator,           //['+', '-', '*', '/']
-    Equal,              //['=']
-    OpenParen,          //['(']
-    CloseParen,         //[')']
-    Comma,              //[',']
+    IDENTIFIER,         //[a-zA-Z][a-zA-Z0-9]*
+    NUMBER,             //[0-9]+
+    OPERATOR,           //['+', '-', '*', '/']
+    EQUAL,              //['=']
 
-    // Miscellaneous
-    Whitespace,         //[' ']
+    OPENPARENT,
+    CLOSEPARENT,
+    WHITESPACE,
+    MISC,               //['\t', '\n']
     EOF                 //['\0']
 }
 
 pub trait Visit {
     fn print(&self);
-    fn write_instruction(&self, file: &mut File);
 }
 
 pub struct ExprAST {
@@ -38,10 +36,6 @@ impl Visit for ExprAST {
             tok.print();
         }
     }
-
-    fn write_instruction(&self, file: &mut File) {
-        todo!("Need to implement write instruction for ExprAST");
-    }
 }
 
 pub struct VariableExprAST {
@@ -51,10 +45,6 @@ pub struct VariableExprAST {
 impl Visit for VariableExprAST {
     fn print(&self) {
         println!("{}", self.name);
-    }
-
-    fn write_instruction(&self, file: &mut File) {
-        todo!("Need to implement write instruction for VariableExprAST");
     }
 }
 
@@ -73,10 +63,6 @@ pub struct NumberExprAST {
 impl Visit for NumberExprAST {
     fn print(&self) {
         println!("{}", self.value);
-    }
-
-    fn write_instruction(&self, file: &mut File) {
-        file.write_all(&self.value.to_string().as_bytes());
     }
 }
 
@@ -100,34 +86,6 @@ impl Visit for BinaryExprAST {
         println!("{}", self.operator);
         self.rhs.print();
     }
-
-    fn write_instruction(&self, file: &mut File) {
-        match self.operator.as_str() {
-            "+" => {
-                file.write_all(b"ADD EAX, ");
-                self.lhs.write_instruction(file);
-                file.write_all(b"\n");
-
-                file.write_all(b"ADD EAX, ");
-                self.rhs.write_instruction(file);
-                file.write_all(b"\n");
-            }
-
-            "-" => {
-                file.write_all(b"SUB EAX, ");
-                self.lhs.write_instruction(file);
-                file.write_all(b"\n");
-
-                file.write_all(b"SUB EAX, ");
-                self.rhs.write_instruction(file);
-                file.write_all(b"\n");
-            },
-
-            //TODO: IMPLEMENT MULTIPLY AND DIVIDE x86 INSTRUCTIONS
-
-            _ => {},
-        }
-    }
 }
 
 impl Deref for BinaryExprAST {
@@ -149,10 +107,6 @@ impl Visit for EqualExprAST {
         println!("=");
         self.rhs.print();
     }
-
-    fn write_instruction(&self, file: &mut File) {
-        todo!("Need to implement write instruction for EqualExprAST");
-    }
 }
 
 impl Deref for EqualExprAST {
@@ -171,10 +125,6 @@ impl Visit for ParenthesisExprAST {
     fn print(&self) {
         self.child.print();
     }
-
-    fn write_instruction(&self, file: &mut File) {
-        todo!("Need to implement write instruction for ParenthesisExprAST");
-    }
 }
 
 pub struct EOFExprAST {
@@ -183,11 +133,6 @@ pub struct EOFExprAST {
 impl Visit for EOFExprAST {
     fn print(&self) {
         println!("EOF");
-    }
-
-    fn write_instruction(&self, file: &mut File) {
-        // file.write_all(b"ret");
-        todo!("Need to implement write instruction for EOFExprAST");
     }
 }
 
