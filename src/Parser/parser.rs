@@ -18,9 +18,17 @@ impl Parser {
 
         Parser {
             tree: ExprAST {
-                child: Self::recursive_descent(),
+                child: Self::recursive_descent(&mut characters),
             }
         }
+    }
+
+    fn recursive_descent(chars: &mut Peekable<Chars>) -> Box<dyn Visit> {
+        let (tok, val) = Self::gettok(chars);
+
+        
+
+        Box::new(EOFExprAST{})
     }
 
     fn parse_identifier(identifier_name: String) -> VariableExprAST {
