@@ -27,14 +27,12 @@ pub trait Visit {
 }
 
 pub struct ExprAST {
-    pub child: Vec<Box<dyn Visit>>,
+    pub child: Box<dyn Visit>,
 }
 
 impl Visit for ExprAST {
     fn print(&self) {
-        for tok in self.child.iter() {
-            tok.print();
-        }
+        self.print();
     }
 }
 
@@ -55,6 +53,18 @@ pub struct NumberExprAST {
 impl Visit for NumberExprAST {
     fn print(&self) {
         println!("{}", self.value);
+    }
+}
+
+pub struct UnaryExprAST {
+    pub negate: bool,
+    pub child: Box<dyn Visit>
+}
+
+impl Visit for UnaryExprAST {
+    fn print(&self) {
+        print!("-");
+        self.child.print();
     }
 }
 
