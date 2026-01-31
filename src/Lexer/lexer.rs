@@ -37,7 +37,7 @@ impl Lexer {
 
     }
 
-    fn gettok(chars: &mut Peekable<Chars>) -> Token { //Returns next token
+    fn gettok(chars: &mut Peekable<Chars>) -> Token { //Returns and consumes the current token
         let mut tok_str = String::from("");
 
         while let Some(c) = chars.next() {
@@ -106,6 +106,10 @@ impl Lexer {
         }
 
         return Token::EOF;
+    }
+
+    fn scantok(chars: &mut Peekable<Chars>) -> Token { //Returns the next token without consuming
+        return Self::gettok(&mut chars.clone()); //TODO: Find a way to remove clone
     }
 
     pub fn print_tokens(&self){
