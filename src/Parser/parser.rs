@@ -10,12 +10,44 @@ pub struct Parser {
 
 pub enum ExprAST {
     NumberExprAST(usize),
-    IdentifierExprAST(String),
+    VariableExprAST(String),
     UnaryExprAST{negate: bool, value: Box<ExprAST>},
     BinaryExprAST{operator: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
     ParentExprAST(Vec<ExprAST>),
     Error,
     EOFExprAST{}
+}
+
+trait Visit {
+    fn print(&self);
+}
+
+impl Visit for ExprAST {
+
+    fn print(&self) {
+       
+        match self {
+        
+            ExprAST::NumberExprAST => {
+                println!("{}", self);
+            },
+
+            ExprAST::VariableExprAST => {
+                println!("", self);
+            },
+
+            ExprAST::BinaryExprAST => {
+
+            }
+
+            _ => {
+                println!("");
+            }
+
+        }
+
+    }
+
 }
 
 impl Parser {
@@ -53,7 +85,7 @@ impl Parser {
                             Token::OPERATOR | Token::EQUAL => {
                                 Self::gettok(chars); //Consume token
                                 
-                                let lhs: ExprAST::IdentifierExprAST(val); 
+                                let lhs: ExprAST::VariableExprAST(val); 
 
                                 Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
                             }
@@ -92,26 +124,10 @@ impl Parser {
                         ExprAST::Error
                     },
 
-                    Token::OPENPARENT => {
-                       Vec<ExprAST> expressions = Vec::new(); 
-
-                        while let currExpr = Self::recursive_descent(chars) {
-                            
-                            match currExpr => {
-                               ExprAST::NumberExprAST | ExprAST::VariableExprAST | ExprAST::UnaryExprAST | ExprAST::BinaryExprAST => {
-                                   expressions.push(currExpr);
-                               }
-
-                                _ => {
-                                    ParentExprAST(expressions)
-                                }
-
-                            }
-
-                        }
-                         
-
+                    _ => {
+                        ExprAST::EOFExprAST { }
                     }
+
                 }
 
             }
@@ -125,8 +141,12 @@ impl Parser {
         ExprAST::NumberExprAST(value)
     }
 
-    fn parse_variable(identifier: String) -> ExprAST::IdentifierExprAST {
-        ExprAST::IdentifierExprAST(identifier)
+    fn parse_variable(identifier: String) -> ExprAST::VariableExprAST {
+        ExprAST::VariableExprAST(identifier)
+    }
+
+    fn print_tree(&self) {
+        self.print();
     }
 
     fn gettok(chars: &mut Peekable<Chars>) -> (Token, String) { //Returns and consumes the current token
