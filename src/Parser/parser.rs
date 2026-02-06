@@ -8,6 +8,14 @@ pub struct Parser {
     pub tree: ExprAST
 }
 
+pub enum ExprAST {
+    NumberExprAST(usize),
+    IdentifierExprAST(String),
+    UnaryExprAST{negate: bool, value: Box<ExprAST>},
+    BinaryExprAST{operator: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
+    EOFExprAST{}
+}
+
 impl Parser {
     pub fn new(filename: &str) -> Parser {
         let contents = fs::read_to_string(filename)
@@ -23,45 +31,17 @@ impl Parser {
         }
     }
 
-    fn recursive_descent(chars: &mut Peekable<Chars>) -> Box<dyn Visit> {
+    fn recursive_descent(chars: &mut Peekable<Chars>) -> ExprAST {
         let (tok, val) = Self::gettok(chars);
 
-        
 
-        Box::new(EOFExprAST{})
+        ExprAST::EOFExprAST {  }
     }
 
-    fn parse_identifier(identifier_name: String) -> VariableExprAST {
-        VariableExprAST { 
-            name: (identifier_name) 
-        }
+    fn parse_number(value: usize) -> ExprAST::NumberExprAST {
+        ExprAST::NumberExprAST(value)
     }
 
-    fn parse_unary(negate: bool, tok: Token, string_val: String) -> UnaryExprAST {
-        match tok {
-            Token::IDENTIFIER => {
-                UnaryExprAST { 
-                    negate: (negate), 
-                    child: (Box::new(VariableExprAST {
-                        name: string_val,
-                    })
-                )}
-            },
-
-            Token::NUMBER => {
-                UnaryExprAST { 
-                    negate: (negate), 
-                    child: (Box::new(VariableExprAST {
-                        name: string_val.parse().unwrap(),
-                    })
-                )}
-            },
-
-            _ => {
-                panic!("Unary expression must have variable or number as a child.")
-            }
-        }
-    }
 
     fn gettok(chars: &mut Peekable<Chars>) -> (Token, String) { //Returns and consumes the current token
         let mut tok_str = String::from("");

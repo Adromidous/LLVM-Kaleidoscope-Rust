@@ -22,97 +22,97 @@ pub enum Token {
     EOF                 //['\0']
 }
 
-pub trait Visit {
-    fn print(&self);
-}
+// pub trait Visit {
+//     fn print(&self);
+// }
 
-pub struct ExprAST {
-    pub child: Box<dyn Visit>,
-}
+// pub struct ExprAST {
+//     pub child: Box<dyn Visit>,
+// }
 
-impl Visit for ExprAST {
-    fn print(&self) {
-        self.print();
-    }
-}
+// impl Visit for ExprAST {
+//     fn print(&self) {
+//         self.print();
+//     }
+// }
 
-pub struct VariableExprAST {
-    pub name: String,
-}
+// pub struct VariableExprAST {
+//     pub name: String,
+// }
 
-impl Visit for VariableExprAST {
-    fn print(&self) {
-        println!("{}", self.name);
-    }
-}
+// impl Visit for VariableExprAST {
+//     fn print(&self) {
+//         println!("{}", self.name);
+//     }
+// }
 
-pub struct NumberExprAST {
-    pub value: usize
-}
+// pub struct NumberExprAST {
+//     pub value: usize
+// }
 
-impl Visit for NumberExprAST {
-    fn print(&self) {
-        println!("{}", self.value);
-    }
-}
+// impl Visit for NumberExprAST {
+//     fn print(&self) {
+//         println!("{}", self.value);
+//     }
+// }
 
-pub struct UnaryExprAST {
-    pub negate: bool,
-    pub child: Box<dyn Visit>
-}
+// pub struct UnaryExprAST {
+//     pub negate: bool,
+//     pub child: Box<dyn Visit>
+// }
 
-impl Visit for UnaryExprAST {
-    fn print(&self) {
-        print!("-");
-        self.child.print();
-    }
-}
+// impl Visit for UnaryExprAST {
+//     fn print(&self) {
+//         print!("-");
+//         self.child.print();
+//     }
+// }
 
-pub struct BinaryExprAST {
-    pub operator: String,
-    pub lhs: Box<dyn Visit>,
-    pub rhs: Box<dyn Visit>,
-}
+// pub struct BinaryExprAST {
+//     pub operator: String,
+//     pub lhs: Box<dyn Visit>,
+//     pub rhs: Box<dyn Visit>,
+// }
 
-impl Visit for BinaryExprAST {
-    fn print(&self) {
-        self.lhs.print();
-        println!("{}", self.operator);
-        self.rhs.print();
-    }
-}
+// impl Visit for BinaryExprAST {
+//     fn print(&self) {
+//         self.lhs.print();
+//         println!("{}", self.operator);
+//         self.rhs.print();
+//     }
+// }
 
-pub struct EqualExprAST {
-    pub lhs: VariableExprAST,
-    pub rhs: Box<dyn Visit>,
-}
+// pub struct EqualExprAST {
+//     pub lhs: VariableExprAST,
+//     pub rhs: Box<dyn Visit>,
+// }
 
-impl Visit for EqualExprAST {
-    fn print(&self) {
-        println!("{}", self.lhs.name);
-        println!("=");
-        self.rhs.print();
-    }
-}
+// impl Visit for EqualExprAST {
+//     fn print(&self) {
+//         println!("{}", self.lhs.name);
+//         println!("=");
+//         self.rhs.print();
+//     }
+// }
 
-pub struct ParenthesisExprAST {
-    pub child: Box<dyn Visit>
-}
+// pub struct ParenthesisExprAST {
+//     pub child: Box<dyn Visit>
+// }
 
-impl Visit for ParenthesisExprAST {
-    fn print(&self) {
-        self.child.print();
-    }
-}
+// impl Visit for ParenthesisExprAST {
+//     fn print(&self) {
+//         self.child.print();
+//     }
+// }
 
-pub struct EOFExprAST {
-}
+// pub struct EOFExprAST {
+// }
 
-impl Visit for EOFExprAST {
-    fn print(&self) {
-        println!("EOF");
-    }
-}
+// impl Visit for EOFExprAST {
+//     fn print(&self) {
+//         println!("EOF");
+//     }
+// }
 
 // pub struct CallExprAST {
 //     pub Callee: String,
