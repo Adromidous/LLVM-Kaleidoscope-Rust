@@ -4,10 +4,6 @@ use crate::Token::token::*;
 use std::str::Chars;
 use std::iter::Peekable;
 
-pub struct Parser {
-    pub tree: ExprAST
-}
-
 pub enum ExprAST {
     NumberExprAST{value: usize},
     VariableExprAST{identifier: String},
@@ -16,6 +12,10 @@ pub enum ExprAST {
     ParentExprAST{children: Vec<ExprAST>},
     Error,
     EOFExprAST
+}
+
+pub struct Parser {
+    pub tree: ExprAST
 }
 
 trait Visit {
@@ -39,18 +39,19 @@ impl Visit for ExprAST {
             ExprAST::UnaryExprAST { negate, value } => {
                 
                 if *negate {
-                    print!("-{}", value.print());
+                    print!("-");
+                    value.print();
                 } else {
-                    print!("{}", value.print());
+                    value.print();
                 }
 
-            }
+            },
 
             ExprAST::BinaryExprAST { op, lhs, rhs } => {
                 lhs.print();
                 println!("{}", op);
                 rhs.print();
-            }
+            },
 
             ExprAST::ParentExprAST { children } => {
                 println!("(");
@@ -61,15 +62,15 @@ impl Visit for ExprAST {
                 }
 
                 println!(")");
-            }
+            },
 
             ExprAST::Error => {
                 println!("ERROR!!!");
-            }
+            },
 
             ExprAST::EOFExprAST => {
                 println!("EOF");
-            }
+            },
 
         }
 
@@ -86,9 +87,7 @@ impl Parser {
         let mut characters = contents.chars().peekable();
 
         Parser {
-            tree: ExprAST {
-                child: Self::recursive_descent(&mut characters),
-            }
+            tree: Self::recursive_descent(&mut characters),
         }
     }
 
