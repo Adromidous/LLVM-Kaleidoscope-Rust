@@ -9,13 +9,13 @@ pub struct Parser {
 }
 
 pub enum ExprAST {
-    NumberExprAST(usize),
-    VariableExprAST(String),
+    NumberExprAST{value: usize},
+    VariableExprAST{identifier: String},
     UnaryExprAST{negate: bool, value: Box<ExprAST>},
-    BinaryExprAST{operator: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
-    ParentExprAST(Vec<ExprAST>),
+    BinaryExprAST{op: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
+    ParentExprAST{children: Vec<ExprAST>},
     Error,
-    EOFExprAST{}
+    EOFExprAST
 }
 
 trait Visit {
@@ -28,20 +28,47 @@ impl Visit for ExprAST {
        
         match self {
         
-            ExprAST::NumberExprAST => {
-                println!("{}", self);
+            ExprAST::NumberExprAST{ value } => {
+                println!("{}", value);
             },
 
-            ExprAST::VariableExprAST => {
-                println!("", self);
+            ExprAST::VariableExprAST{ identifier } => {
+                println!("{}", identifier);
             },
 
-            ExprAST::BinaryExprAST => {
+            ExprAST::UnaryExprAST { negate, value } => {
+                
+                if *negate {
+                    print!("-{}", value.print());
+                } else {
+                    print!("{}", value.print());
+                }
 
             }
 
-            _ => {
-                println!("");
+            ExprAST::BinaryExprAST { op, lhs, rhs } => {
+                lhs.print();
+                println!("{}", op);
+                rhs.print();
+            }
+
+            ExprAST::ParentExprAST { children } => {
+                println!("(");
+
+                for node in children {
+                    node.print();
+                    println!(",");
+                }
+
+                println!(")");
+            }
+
+            ExprAST::Error => {
+                println!("ERROR!!!");
+            }
+
+            ExprAST::EOFExprAST => {
+                println!("EOF");
             }
 
         }
@@ -80,18 +107,20 @@ impl Parser {
                         
                         let (tok_scan, val_scan) = Self::scantok(chars);
 
-                        match tok_scan => {
+                        match tok_scan {
 
                             Token::OPERATOR | Token::EQUAL => {
                                 Self::gettok(chars); //Consume token
                                 
-                                let lhs: ExprAST::VariableExprAST(val); 
+                                let lhs = ExprAST::VariableExprAST{
+                                    identifier: val
+                                }; 
 
-                                Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
+                                return Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
                             }
 
                             _ => {
-                                Self::parse_variable(val)
+                                return Self::parse_variable(val);
                             }
 
                         }
@@ -101,18 +130,20 @@ impl Parser {
 
                         let (tok_scan, val_scan) = Self::scantok(chars);
 
-                        match tok_scan => {
+                        match tok_scan {
 
                             Token::OPERATOR | Token::EQUAL => {
                                 Self::gettok(chars); //Consume token
                                 
-                                let lhs: ExprAST::NumberExprAST(val.parse().unwrap()); 
+                                let lhs = ExprAST::NumberExprAST{
+                                    value: val.parse().unwrap()
+                                }; 
 
-                                Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
+                                return Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
                             }
 
                             _ => {
-                                Self::parse_variable(val)
+                                return Self::parse_number(val.parse().unwrap());
                             }
 
                         }
@@ -121,32 +152,44 @@ impl Parser {
 
 
                     Token::OPERATOR | Token::EQUAL | Token::CLOSEPARENT => {
-                        ExprAST::Error
+                        return ExprAST::Error;
                     },
 
                     _ => {
-                        ExprAST::EOFExprAST { }
+                        return ExprAST::EOFExprAST;
                     }
 
                 }
 
             }
 
-        ExprAST::EOFExprAST {  }
+            return ExprAST::EOFExprAST{};
+
         }
-        
     }
 
-    fn parse_number(value: usize) -> ExprAST::NumberExprAST {
-        ExprAST::NumberExprAST(value)
+    fn parse_number(value: usize) -> ExprAST {
+        ExprAST::NumberExprAST{
+            value: value
+        }
     }
 
-    fn parse_variable(identifier: String) -> ExprAST::VariableExprAST {
-        ExprAST::VariableExprAST(identifier)
+    fn parse_variable(identifier: String) -> ExprAST {
+        ExprAST::VariableExprAST{
+            identifier: identifier
+        }
     }
 
-    fn print_tree(&self) {
-        self.print();
+    fn parse_binary_expr(op: String, lhs: ExprAST, rhs: ExprAST) -> ExprAST {
+        ExprAST::BinaryExprAST {
+            op: op,
+            lhs: Box::new(lhs),
+            rhs: Box::new(rhs)
+        }
+    }
+
+    pub fn print_tree(&self) {
+        self.tree.print();
     }
 
     fn gettok(chars: &mut Peekable<Chars>) -> (Token, String) { //Returns and consumes the current token
