@@ -6,8 +6,7 @@ use std::iter::Peekable;
 
 pub enum ExprAST {
     NumberExprAST{value: usize},
-    VariableExprAST{identifier: String},
-    UnaryExprAST{negate: bool, value: Box<ExprAST>},
+    VariableExprAST{identifier: String}, UnaryExprAST{negate: bool, value: Box<ExprAST>},
     BinaryExprAST{op: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
     ParentExprAST{children: Vec<ExprAST>},
     Error,
@@ -58,7 +57,6 @@ impl Visit for ExprAST {
 
                 for node in children {
                     node.print();
-                    println!(",");
                 }
 
                 println!(")");
@@ -148,6 +146,37 @@ impl Parser {
                         }
 
                     },
+
+                    Token::OPENPARENT => {
+                        let mut children: Vec<ExprAST> = Vec::new(); 
+                        
+                        loop {
+                            let (tok_scan, val_scan) = Self::scantok(chars);
+                            
+                            match tok_scan {
+
+                                Token::CLOSEPARENT => { 
+                                    return ExprAST::ParentExprAST {
+                                        children: children
+                                    };
+                                },
+
+
+                                Token::WHITESPACE | Token::MISC => {
+                                    let _ = Self::gettok(chars);
+                                    continue;
+                                },
+
+                                Token::EOF | Token::OPERATOR | Token::EQUAL => {
+                                    return ExprAST::Error;
+                                },
+
+                                _ => {
+                                    children.push(Self::recursive_descent(chars));
+                                }
+                            }
+                        }
+                    }
 
 
                     Token::OPERATOR | Token::EQUAL | Token::CLOSEPARENT => {
