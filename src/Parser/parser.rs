@@ -6,7 +6,8 @@ use std::iter::Peekable;
 
 pub enum ExprAST {
     NumberExprAST{value: usize},
-    VariableExprAST{identifier: String}, UnaryExprAST{negate: bool, value: Box<ExprAST>},
+    VariableExprAST{identifier: String}, 
+    UnaryExprAST{value: Box<ExprAST>},
     BinaryExprAST{op: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
     ParentExprAST{children: Vec<ExprAST>},
     Error,
@@ -35,15 +36,9 @@ impl Visit for ExprAST {
                 println!("{}", identifier);
             },
 
-            ExprAST::UnaryExprAST { negate, value } => {
-                
-                if *negate {
-                    print!("-");
-                    value.print();
-                } else {
-                    value.print();
-                }
-
+            ExprAST::UnaryExprAST { value } => {
+                print!("-");
+                value.print();
             },
 
             ExprAST::BinaryExprAST { op, lhs, rhs } => {
@@ -129,7 +124,7 @@ impl Parser {
 
                         match tok_scan {
 
-                            Token::OPERATOR | Token::EQUAL => {
+                            Token::OPERATOR => {
                                 Self::gettok(chars); //Consume token
                                 
                                 let lhs = ExprAST::NumberExprAST{
@@ -146,6 +141,27 @@ impl Parser {
                         }
 
                     },
+
+                    Token::OPERATOR => {
+                        
+                        match val.as_str() {
+                            
+                            "-" => { //Negation to create UnaryExprAST object
+                                let nextExprAST = Self::recursive_descent(chars);             
+                                
+                                return ExprAST::UnaryExprAST{
+                                    value: Box::new(nextExprAST)
+                                };
+                            }
+
+                            _ => {
+                                return ExprAST::Error;
+                            }
+
+                        }
+
+                    }
+
 
                     Token::OPENPARENT => {
                         let mut children: Vec<ExprAST> = Vec::new(); 
@@ -179,12 +195,12 @@ impl Parser {
                     }
 
 
-                    Token::OPERATOR | Token::EQUAL | Token::CLOSEPARENT => {
+                    Token::EQUAL | Token::CLOSEPARENT => {
                         return ExprAST::Error;
                     },
 
                     _ => {
-                        return ExprAST::EOFExprAST;
+                        return ExprAST::Error;
                     }
 
                 }
@@ -192,7 +208,6 @@ impl Parser {
             }
 
             return ExprAST::EOFExprAST{};
-
         }
     }
 
