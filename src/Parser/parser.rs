@@ -254,10 +254,10 @@ impl Parser {
             },
 
             Token::BOOLEAN => {
-                if str_val == "0" {
-                    return Self::parse_number(1);
-                } else {
+                if str_val == "false" {
                     return Self::parse_number(0);
+                } else {
+                    return Self::parse_number(1);
                 }
             },
 
