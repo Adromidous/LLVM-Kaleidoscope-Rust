@@ -251,25 +251,27 @@ impl Parser {
     }
 
     fn parse_expression(tok: Token, str_val: String, chars: &mut Peekable<Chars>) -> ExprAST {
-        let (tok_scan, val_scan) = Self::scantok(chars);
 
         match tok {
-            
-            Token::NUMBER | Token::IDENTIFIER | Token::BOOLEAN | Token::NULL => { // Literal
+            Token::NUMBER | Token::IDENTIFIER | Token::BOOLEAN | Token::NULL => { //Literal
                 return Self::parse_literal(tok, str_val);
             },
 
             Token::OPENPARENT => { //Grouping
-                return Self::parse_expression(tok, str_val, chars);
+                return Self::parse_grouping(chars);
             },
 
             Token::NEGATE => { //Unary
-                return Self::parse_unary();
+                return Self::parse_unary(chars);
             },
 
             Token::OPERATOR => { //Binary
                 return Self::parse_binary();
             },
+
+            _ => {
+                return ExprAST::EOFExprAST;
+            }
         }
     }
 
@@ -301,12 +303,23 @@ impl Parser {
         }
     }
 
-    fn parse_grouping() -> ExprAST {
-        todo!();
+    fn parse_grouping(chars: &mut Peekable<Chars>) -> ExprAST {
+        let (mut tok, mut str_val) = Self::gettok(chars);
+        let mut tokVec = Vec::new();
+
+        while tok != Token::CLOSEPARENT {
+            tokVec.push(Self::parse_expression(tok, str_val, chars));
+
+            (tok, str_val) = Self::gettok(chars);
+        }
+
+        return ExprAST::GroupingExprAST { children: tokVec };
     }
 
-    fn parse_unary() -> ExprAST {
-        todo!();
+    fn parse_unary(chars: &mut Peekable<Chars>) -> ExprAST {
+        let (tok, str_val) = Self::gettok(chars);
+
+        return ExprAST::UnaryExprAST { value: Box::new(Self::parse_expression(tok, str_val, chars)) }
     }
 
     fn parse_binary() -> ExprAST {
