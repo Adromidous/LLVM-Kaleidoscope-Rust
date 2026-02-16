@@ -14,6 +14,9 @@ pub enum Token {
     NUMBER,             //[0-9]+
     OPERATOR,           //['+', '-', '*', '/']
     EQUAL,              //['=']
+    BOOLEAN,            //["true", "false"]
+    NULL,               //["null"]
+    NEGATE,             //['!', '-']
 
     OPENPARENT,
     CLOSEPARENT,

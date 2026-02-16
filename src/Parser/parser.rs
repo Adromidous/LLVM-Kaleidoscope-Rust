@@ -4,14 +4,38 @@ use crate::Token::token::*;
 use std::str::Chars;
 use std::iter::Peekable;
 
+/*
+GRAMMAR RULES
+
+    Expression  => Literal | Unary | Binary | Grouping
+    
+    Literal     => NUMBER | STRING | "true" | "false" | "null"
+
+    Grouping    => "("Expression")"
+
+    Unary       => ("!" | "-") Expression
+
+    Binary      => Expression Operator Expression
+
+    Operator    => "+" | "-" | "*" | "/"
+*/
+
+
 pub enum ExprAST {
     NumberExprAST{value: usize},
-    VariableExprAST{identifier: String}, 
+    VariableExprAST{identifier: String},
+    LiteralExprAST{literal: Box<ExprAST>},
     UnaryExprAST{value: Box<ExprAST>},
     BinaryExprAST{op: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
-    ParentExprAST{children: Vec<ExprAST>},
+    GroupingExprAST{children: Vec<ExprAST>},
     Error,
+    Null,
     EOFExprAST
+}
+
+pub enum Bool {
+    True,
+    False
 }
 
 pub struct Parser {
@@ -47,7 +71,11 @@ impl Visit for ExprAST {
                 rhs.print();
             },
 
-            ExprAST::ParentExprAST { children } => {
+            ExprAST::LiteralExprAST { literal } => {
+                literal.print();
+            }
+
+            ExprAST::GroupingExprAST { children } => {
                 println!("(");
 
                 for node in children {
@@ -56,6 +84,10 @@ impl Visit for ExprAST {
 
                 println!(")");
             },
+
+            ExprAST::Null => {
+                println!("NULL");
+            }
 
             ExprAST::Error => {
                 println!("ERROR!!!");
@@ -172,7 +204,7 @@ impl Parser {
                             match tok_scan {
 
                                 Token::CLOSEPARENT => { 
-                                    return ExprAST::ParentExprAST {
+                                    return ExprAST::GroupingExprAST {
                                         children: children
                                     };
                                 },
@@ -208,6 +240,34 @@ impl Parser {
             }
 
             return ExprAST::EOFExprAST{};
+        }
+    }
+
+    fn parse_literal(tok: Token, str_val: String) -> ExprAST {
+        match tok {
+            Token::IDENTIFIER => {
+                return Self::parse_variable(str_val);
+            },
+
+            Token::NUMBER => {
+                return Self::parse_number(str_val.parse().unwrap());
+            },
+
+            Token::BOOLEAN => {
+                if str_val == "0" {
+                    return Self::parse_number(1);
+                } else {
+                    return Self::parse_number(0);
+                }
+            },
+
+            Token::NULL => {
+                return ExprAST::Null;
+            },
+
+            _ => {
+                return ExprAST::Error;
+            }
         }
     }
 
@@ -259,6 +319,10 @@ impl Parser {
                 return (Token::OPERATOR, String::from(c));
             }
 
+            else if c == '!' || c == '-' {
+                return (Token::NEGATE, String::from(c));
+            }
+
             else if c == '=' {
                 return (Token::EQUAL, String::from(c));
             }
@@ -283,7 +347,13 @@ impl Parser {
                     }
                 }
 
-                return (Token::IDENTIFIER, tok_str);
+                if tok_str == "true" || tok_str == "false" {
+                    return (Token::BOOLEAN, tok_str);
+                } else if tok_str == "null" {
+                    return (Token::NULL, tok_str);
+                } else {
+                    return (Token::IDENTIFIER, tok_str);
+                }
             }
 
             else if c.is_numeric() {
