@@ -17,7 +17,7 @@ GRAMMAR RULES
 
     Binary      => Expression Operator Expression
 
-    Operator    => "+" | "-" | "*" | "/"
+    Operator    => "+" | "-" | "*" | "/" | "="
 */
 
 
@@ -133,7 +133,7 @@ impl Parser {
 
                         match tok_scan {
 
-                            Token::OPERATOR | Token::EQUAL => {
+                            Token::OPERATOR {
                                 Self::gettok(chars); //Consume token
                                 
                                 let lhs = ExprAST::VariableExprAST{
@@ -141,7 +141,7 @@ impl Parser {
                                 }; 
 
                                 return Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
-                            }
+                            },
 
                             _ => {
                                 return Self::parse_variable(val);
@@ -227,7 +227,7 @@ impl Parser {
                     }
 
 
-                    Token::EQUAL | Token::CLOSEPARENT => {
+                    Token::CLOSEPARENT => {
                         return ExprAST::Error;
                     },
 
@@ -315,16 +315,12 @@ impl Parser {
                 return (Token::MISC, tok_str);
             }
 
-            else if c == '+' || c == '-' || c == '/' || c == '*' {
+            else if c == '+' || c == '-' || c == '/' || c == '*' || c == '=' {
                 return (Token::OPERATOR, String::from(c));
             }
 
             else if c == '!' || c == '-' {
                 return (Token::NEGATE, String::from(c));
-            }
-
-            else if c == '=' {
-                return (Token::EQUAL, String::from(c));
             }
 
             else if c == '(' {
