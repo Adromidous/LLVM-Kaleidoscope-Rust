@@ -26,7 +26,6 @@ pub enum ExprAST {
     LiteralExprAST{literal: Box<ExprAST>},
     UnaryExprAST{value: Box<ExprAST>},
     BinaryExprAST{op: String, lhs: Box<ExprAST>, rhs: Box<ExprAST>},
-    GroupingExprAST{children: Vec<ExprAST>},
     Error,
     Null,
     EOFExprAST
@@ -39,8 +38,6 @@ pub enum Bool {
 
 pub struct Parser {
     pub tree: ExprAST,
-    pub prev_token: Token,
-    pub prev_string: String,
 }
 
 trait Visit {
@@ -74,21 +71,11 @@ impl Visit for ExprAST {
 
             ExprAST::LiteralExprAST { literal } => {
                 literal.print();
-            }
-
-            ExprAST::GroupingExprAST { children } => {
-                println!("(");
-
-                for node in children {
-                    node.print();
-                }
-
-                println!(")");
             },
 
             ExprAST::Null => {
                 println!("NULL");
-            }
+            },
 
             ExprAST::Error => {
                 println!("ERROR!!!");
@@ -109,13 +96,10 @@ impl Parser {
         let contents = fs::read_to_string(filename)
                     .expect("FILE NAME NOT VALID");
 
-        let mut tokens: Vec<Token> = Vec::new();
         let mut characters = contents.chars().peekable();
 
         Parser {
             tree: Self::recursive_descent(&mut characters),
-            prev_token: Token::WHITESPACE,
-            prev_string: String::from(""),
         }
     }
 
@@ -300,19 +284,6 @@ impl Parser {
                 return ExprAST::Error;
             }
         }
-    }
-
-    fn parse_grouping(chars: &mut Peekable<Chars>) -> ExprAST {
-        let (mut tok, mut str_val) = Self::gettok(chars);
-        let mut tokVec = Vec::new();
-
-        while tok != Token::CLOSEPARENT {
-            tokVec.push(Self::parse_expression(tok, str_val, chars));
-
-            (tok, str_val) = Self::gettok(chars);
-        }
-
-        return ExprAST::GroupingExprAST { children: tokVec };
     }
 
     fn parse_unary(chars: &mut Peekable<Chars>) -> ExprAST {
