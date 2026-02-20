@@ -13,6 +13,7 @@ pub enum Token {
     IDENTIFIER,         //[a-zA-Z][a-zA-Z0-9]*
     NUMBER,             //[0-9]+
     OPERATOR,           //['+', '-', '*', '/', "="]
+    EQUAL,              //['='],
     BOOLEAN,            //["true", "false"]
     NULL,               //["null"]
     NEGATE,             //['!', '-']

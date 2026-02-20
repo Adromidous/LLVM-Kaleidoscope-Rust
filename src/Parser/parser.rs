@@ -104,161 +104,87 @@ impl Parser {
     }
 
     fn recursive_descent(chars: &mut Peekable<Chars>) -> ExprAST {
-        let (tok, val) = Self::gettok(chars); 
-
-        return Self::parse_expression(tok, val, chars);
-
-        // loop {
-        //     let (tok, val) = Self::gettok(chars); 
-
-        //     if tok == Token::WHITESPACE || tok == Token::MISC {
-        //         continue;
-        //     } else if tok != Token::EOF {  
-
-        //         match tok {
-
-        //             Token::IDENTIFIER => {
-                        
-        //                 let (tok_scan, val_scan) = Self::scantok(chars);
-
-        //                 match tok_scan {
-
-        //                     Token::OPERATOR => {
-        //                         Self::gettok(chars); //Consume token
-                                
-        //                         let lhs = ExprAST::VariableExprAST{
-        //                             identifier: val
-        //                         }; 
-
-        //                         return Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
-        //                     },
-
-        //                     _ => {
-        //                         return Self::parse_variable(val);
-        //                     }
-
-        //                 }
-        //             },
-
-        //             Token::NUMBER => {
-
-        //                 let (tok_scan, val_scan) = Self::scantok(chars);
-
-        //                 match tok_scan {
-
-        //                     Token::OPERATOR => {
-        //                         Self::gettok(chars); //Consume token
-                                
-        //                         let lhs = ExprAST::NumberExprAST{
-        //                             value: val.parse().unwrap()
-        //                         }; 
-
-        //                         return Self::parse_binary_expr(val_scan, lhs, Self::recursive_descent(chars));   
-        //                     }
-
-        //                     _ => {
-        //                         return Self::parse_number(val.parse().unwrap());
-        //                     }
-
-        //                 }
-
-        //             },
-
-        //             Token::OPERATOR => {
-                        
-        //                 match val.as_str() {
-                            
-        //                     "-" => { //Negation to create UnaryExprAST object
-        //                         let nextExprAST = Self::recursive_descent(chars);             
-                                
-        //                         return ExprAST::UnaryExprAST{
-        //                             value: Box::new(nextExprAST)
-        //                         };
-        //                     }
-
-        //                     _ => {
-        //                         return ExprAST::Error;
-        //                     }
-
-        //                 }
-
-        //             }
-
-
-        //             Token::OPENPARENT => {
-        //                 let mut children: Vec<ExprAST> = Vec::new(); 
-                        
-        //                 loop {
-        //                     let (tok_scan, val_scan) = Self::scantok(chars);
-                            
-        //                     match tok_scan {
-
-        //                         Token::CLOSEPARENT => { 
-        //                             return ExprAST::GroupingExprAST {
-        //                                 children: children
-        //                             };
-        //                         },
-
-
-        //                         Token::WHITESPACE | Token::MISC => {
-        //                             let _ = Self::gettok(chars);
-        //                             continue;
-        //                         },
-
-        //                         Token::EOF | Token::OPERATOR => {
-        //                             return ExprAST::Error;
-        //                         },
-
-        //                         _ => {
-        //                             children.push(Self::recursive_descent(chars));
-        //                         }
-        //                     }
-        //                 }
-        //             }
-
-
-        //             Token::CLOSEPARENT => {
-        //                 return ExprAST::Error;
-        //             },
-
-        //             _ => {
-        //                 return ExprAST::Error;
-        //             }
-
-        //         }
-
-        //     }
-
-        //     return ExprAST::EOFExprAST{};
-        // }
+        return Self::parse_expression(chars);
     }
 
-    fn parse_expression(tok: Token, str_val: String, chars: &mut Peekable<Chars>) -> ExprAST {
+    fn parse_expression(chars: &mut Peekable<Chars>) -> ExprAST {
+        return Self::parse_term(chars);
+    }
+
+    fn parse_term(chars: &mut Peekable<Chars>) -> ExprAST {
+        let lhs: ExprAST = Self::parse_factor(chars);
+
+        let (next_tok, next_str) = Self::scantok(chars);
+
+        match next_tok {
+            
+            Token::OPERATOR => {
+
+                if next_str == "+" || next_str == "-" {
+                    let (op_tok, op_str) = Self::gettok(chars);
+                    let rhs: ExprAST = Self::parse_factor(chars);
+
+                    return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
+                } else {
+                    return lhs;
+                }
+            }
+
+            _ => {
+                return lhs;
+            }
+
+        }
+
+    }
+
+    fn parse_factor(chars: &mut Peekable<Chars>) -> ExprAST {
+        let lhs: ExprAST = Self::parse_unary(chars);
+
+        let (next_tok, next_str) = Self::scantok(chars);
+
+        match next_tok {
+            
+            Token::OPERATOR => {
+
+                if next_str == "*" || next_str == "/" {
+                    let (op_tok, op_str) = Self::gettok(chars);
+                    let rhs: ExprAST = Self::parse_unary(chars);
+
+                    return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
+                } else {
+                    return lhs;
+                }
+            }
+
+            _ => {
+                return lhs;
+            }
+
+        }
+
+    }
+
+    fn parse_unary(chars: &mut Peekable<Chars>) -> ExprAST {
+        let (tok, str_val) = Self::scantok(chars);
 
         match tok {
-            Token::NUMBER | Token::IDENTIFIER | Token::BOOLEAN | Token::NULL => { //Literal
-                return Self::parse_literal(tok, str_val);
-            },
 
-            Token::OPENPARENT => { //Grouping
-                return Self::parse_grouping(chars);
-            },
+            Token::NEGATE => {
+                let rhs: ExprAST = Self::parse_unary(chars);
 
-            Token::NEGATE => { //Unary
-                return Self::parse_unary(chars);
-            },
-
-            Token::OPERATOR => { //Binary
-                return Self::parse_binary();
+                return ExprAST::UnaryExprAST { value: (Box::new(rhs)) }
             },
 
             _ => {
-                return ExprAST::EOFExprAST;
+                return Self::parse_primary(chars);
             }
         }
     }
 
-    fn parse_literal(tok: Token, str_val: String) -> ExprAST {
+    fn parse_primary(chars: &mut Peekable<Chars>) -> ExprAST {
+        let (tok, str_val) = Self::gettok(chars);
+
         match tok {
             Token::IDENTIFIER => {
                 return Self::parse_variable(str_val);
@@ -280,20 +206,14 @@ impl Parser {
                 return ExprAST::Null;
             },
 
+            Token::OPENPARENT => {
+                return Self::parse_expression(chars);
+            },
+
             _ => {
                 return ExprAST::Error;
             }
         }
-    }
-
-    fn parse_unary(chars: &mut Peekable<Chars>) -> ExprAST {
-        let (tok, str_val) = Self::gettok(chars);
-
-        return ExprAST::UnaryExprAST { value: Box::new(Self::parse_expression(tok, str_val, chars)) }
-    }
-
-    fn parse_binary() -> ExprAST {
-        todo!();
     }
 
     fn parse_number(value: usize) -> ExprAST {
