@@ -7,17 +7,16 @@ use std::iter::Peekable;
 /*
 GRAMMAR RULES
 
-    Expression  => Literal | Unary | Binary | Grouping
+    Expression  => Term
+
+    Term        => Factor ( ( "-" | "+" ) Factor )*
+
+    Factor      => Unary ( ( "*" | "/" ) Unary )*
+
+    Unary       => ("!" | "-") Unary | Primary
     
-    Literal     => NUMBER | STRING | "true" | "false" | "null"
+    Primary     => NUMBER | STRING | "true" | "false" | "null" | "(" Expression ")"
 
-    Grouping    => "("Expression")"
-
-    Unary       => ("!" | "-") Expression
-
-    Binary      => Expression Operator Expression
-
-    Operator    => "+" | "-" | "*" | "/" | "="
 */
 
 
@@ -420,7 +419,7 @@ impl Parser {
     }
 
     fn scantok(chars: &mut Peekable<Chars>) -> (Token, String) { //Returns the next token without consuming
-        return Self::gettok(&mut chars.clone()); //TODO: Find a way to remove clone
+        return Self::gettok(&mut chars.clone());
     }
 
 }
