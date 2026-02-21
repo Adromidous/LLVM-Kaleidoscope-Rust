@@ -64,9 +64,11 @@ impl Visit for ExprAST {
             },
 
             ExprAST::BinaryExprAST { op, lhs, rhs } => {
+                println!("(");
                 lhs.print();
                 println!("{}", op);
                 rhs.print();
+                println!(")");
             },
 
             ExprAST::LiteralExprAST { literal } => {
@@ -122,7 +124,7 @@ impl Parser {
 
                 if next_str == "+" || next_str == "-" {
                     let (op_tok, op_str) = Self::gettok(chars);
-                    let rhs: ExprAST = Self::parse_factor(chars);
+                    let rhs: ExprAST = Self::parse_term(chars);
 
                     return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
                 } else {
