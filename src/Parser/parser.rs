@@ -118,25 +118,18 @@ impl Parser {
 
         let (next_tok, next_str) = Self::scantok(chars);
 
-        match next_tok {
-            
-            Token::OPERATOR => {
+        if next_tok == Token::OPERATOR {
+            if next_str == "+" || next_str == "-" {
+                let (op_tok, op_str) = Self::gettok(chars);
+                let rhs: ExprAST = Self::parse_term(chars);
 
-                if next_str == "+" || next_str == "-" {
-                    let (op_tok, op_str) = Self::gettok(chars);
-                    let rhs: ExprAST = Self::parse_term(chars);
-
-                    return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
-                } else {
-                    return lhs;
-                }
-            }
-
-            _ => {
+                return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
+            } else {
                 return lhs;
             }
-
         }
+
+        return lhs;
 
     }
 
@@ -145,43 +138,33 @@ impl Parser {
 
         let (next_tok, next_str) = Self::scantok(chars);
 
-        match next_tok {
-            
-            Token::OPERATOR => {
+        if next_tok == Token::OPERATOR {
+            if next_str == "*" || next_str == "/" {
+                let (op_tok, op_str) = Self::gettok(chars);
+                let rhs: ExprAST = Self::parse_unary(chars);
 
-                if next_str == "*" || next_str == "/" {
-                    let (op_tok, op_str) = Self::gettok(chars);
-                    let rhs: ExprAST = Self::parse_unary(chars);
-
-                    return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
-                } else {
-                    return lhs;
-                }
-            }
-
-            _ => {
+                return ExprAST::BinaryExprAST { op: (op_str), lhs: (Box::new(lhs)), rhs: (Box::new(rhs)) }
+            } else {
                 return lhs;
             }
-
         }
+
+        return lhs;
 
     }
 
     fn parse_unary(chars: &mut Peekable<Chars>) -> ExprAST {
         let (tok, str_val) = Self::scantok(chars);
 
-        match tok {
+        if (tok == Token::NEGATE || tok == Token::OPERATOR) && str_val == "-" {
+            let (tok, str_val) = Self::gettok(chars);
 
-            Token::NEGATE => {
-                let rhs: ExprAST = Self::parse_unary(chars);
+            let rhs: ExprAST = Self::parse_unary(chars);
 
-                return ExprAST::UnaryExprAST { value: (Box::new(rhs)) }
-            },
-
-            _ => {
-                return Self::parse_primary(chars);
-            }
+            return ExprAST::UnaryExprAST { value: (Box::new(rhs)) }
         }
+
+        return Self::parse_primary(chars);
     }
 
     fn parse_primary(chars: &mut Peekable<Chars>) -> ExprAST {
